@@ -9,9 +9,22 @@ const SECRET_PATTERNS = [
 export interface SafeErrorContext {
 	operation: string;
 	itemIndex: number;
+	category: BattleMetricsErrorCategory;
 	statusCode?: number;
 	retryAfter?: string;
 }
+
+export type BattleMetricsErrorCategory =
+	| 'invalidCredential'
+	| 'subscriptionRequired'
+	| 'permissionDenied'
+	| 'notFound'
+	| 'rateLimited'
+	| 'serverError'
+	| 'timeout'
+	| 'networkError'
+	| 'malformedResponse'
+	| 'requestFailed';
 
 export class BattleMetricsRequestError extends Error {
 	constructor(
@@ -51,9 +64,29 @@ function errorDocumentDetails(value: unknown): string | undefined {
 	return details === '' ? undefined : details;
 }
 
+function errorCategory(
+	statusCode: number | undefined,
+	details: string | undefined,
+	originalMessage: string,
+): BattleMetricsErrorCategory {
+	if (statusCode === 401) return 'invalidCredential';
+	if (statusCode === 403) {
+		return /subscription/i.test(details ?? originalMessage)
+			? 'subscriptionRequired'
+			: 'permissionDenied';
+	}
+	if (statusCode === 404) return 'notFound';
+	if (statusCode === 429) return 'rateLimited';
+	if (statusCode !== undefined && statusCode >= 500) return 'serverError';
+	if (/malformed|unexpected token|invalid json/i.test(originalMessage)) return 'malformedResponse';
+	if (/timed?\s*out|timeout|ETIMEDOUT/i.test(originalMessage)) return 'timeout';
+	if (/ECONN|ENOTFOUND|EAI_AGAIN|network|socket|DNS/i.test(originalMessage)) return 'networkError';
+	return 'requestFailed';
+}
+
 export function normalizeError(
 	error: unknown,
-	context: Omit<SafeErrorContext, 'statusCode' | 'retryAfter'>,
+	context: Pick<SafeErrorContext, 'operation' | 'itemIndex'>,
 ): BattleMetricsRequestError {
 	if (error instanceof BattleMetricsRequestError) return error;
 	const record =
@@ -76,11 +109,11 @@ export function normalizeError(
 		typeof response?.headers === 'object' && response.headers !== null
 			? (response.headers as Record<string, unknown>)
 			: {};
+	const retryAfter = safeRetryAfter(headers['retry-after']);
 	return new BattleMetricsRequestError(message, {
 		...context,
+		category: errorCategory(statusCode, apiDetails, originalMessage),
 		...(statusCode === undefined ? {} : { statusCode }),
-		...(safeRetryAfter(headers['retry-after']) === undefined
-			? {}
-			: { retryAfter: safeRetryAfter(headers['retry-after']) }),
+		...(retryAfter === undefined ? {} : { retryAfter }),
 	});
 }

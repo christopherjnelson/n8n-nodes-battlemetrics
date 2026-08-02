@@ -21,6 +21,14 @@ export interface BattleMetricsRequestOptions {
 	timeoutMs?: number;
 }
 
+export interface BattleMetricsUrlRequestOptions {
+	method: IHttpRequestMethods;
+	url: URL;
+	itemIndex: number;
+	operation: string;
+	timeoutMs?: number;
+}
+
 export function encodedApiPath(pathSegments: readonly string[]): string {
 	return `/${pathSegments.map((segment) => encodeURIComponent(segment)).join('/')}`;
 }
@@ -37,18 +45,22 @@ export function queryObject(
 	) as IDataObject;
 }
 
-export async function battleMetricsApiRequest(
+async function requestJsonApi(
 	this: IExecuteFunctions,
-	options: BattleMetricsRequestOptions,
+	options: BattleMetricsUrlRequestOptions & {
+		query?: Readonly<Record<string, QueryValue | undefined>>;
+		body?: JsonValue;
+	},
 ): Promise<JsonApiDocument> {
+	const query = queryObject(options.query);
 	const request: IHttpRequestOptions = {
 		method: options.method,
-		url: apiUrl(options.pathSegments),
+		url: options.url.href,
 		headers: {
 			Accept: JSON_API_MEDIA_TYPE,
 			...(options.body === undefined ? {} : { 'Content-Type': JSON_API_MEDIA_TYPE }),
 		},
-		qs: queryObject(options.query),
+		...(Object.keys(query).length === 0 ? {} : { qs: query }),
 		timeout: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
 		json: true,
 		...(options.body === undefined ? {} : { body: options.body }),
@@ -67,4 +79,36 @@ export async function battleMetricsApiRequest(
 			itemIndex: options.itemIndex,
 		});
 	}
+}
+
+export async function battleMetricsApiRequest(
+	this: IExecuteFunctions,
+	options: BattleMetricsRequestOptions,
+): Promise<JsonApiDocument> {
+	return await requestJsonApi.call(this, {
+		...options,
+		url: new URL(apiUrl(options.pathSegments)),
+	});
+}
+
+export async function battleMetricsApiRequestUrl(
+	this: IExecuteFunctions,
+	options: BattleMetricsUrlRequestOptions,
+): Promise<JsonApiDocument> {
+	const origin = new URL(BATTLEMETRICS_API_ORIGIN).origin;
+	if (
+		options.url.protocol !== 'https:' ||
+		options.url.origin !== origin ||
+		options.url.username !== '' ||
+		options.url.password !== ''
+	) {
+		throw normalizeError(
+			new Error('Unsafe pagination link: expected the BattleMetrics HTTPS origin'),
+			{
+				operation: options.operation,
+				itemIndex: options.itemIndex,
+			},
+		);
+	}
+	return await requestJsonApi.call(this, options);
 }

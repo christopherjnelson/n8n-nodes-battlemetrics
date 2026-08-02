@@ -30,7 +30,8 @@
 		"lint": "n8n-node lint",
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit --incremental false && tsc -p tsconfig.test.json",
-		"validate": "n8n-node lint"
+		"validate": "n8n-node lint",
+		"verify:live": "node scripts/live-verify.mjs"
 	},
 	"files": [
 		"dist",

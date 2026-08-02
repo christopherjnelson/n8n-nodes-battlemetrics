@@ -1,5 +1,7 @@
 import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n-workflow';
 
+// A network test cannot distinguish all credential/subscription states; see ADR 0004.
+// eslint-disable-next-line @n8n/community-nodes/credential-test-required
 export class BattleMetricsApi implements ICredentialType {
 	name = 'battleMetricsApi';
 

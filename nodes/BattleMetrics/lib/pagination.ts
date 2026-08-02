@@ -1,18 +1,10 @@
-import type {
-	JsonApiDocument,
-	JsonApiLink,
-	JsonApiResource,
-	JsonApiSuccessDocument,
-} from './jsonApi';
+import type { JsonApiDocument, JsonApiLink } from './jsonApi';
+import type { JsonApiCollectionDocument } from './jsonApiValidation';
 import {
 	BATTLEMETRICS_API_ORIGIN,
 	DEFAULT_MAX_ITEMS,
 	DEFAULT_MAX_PAGES,
 } from '../transport/constants';
-
-export interface JsonApiCollectionDocument extends JsonApiSuccessDocument {
-	data: JsonApiResource[];
-}
 
 export interface PaginationOptions {
 	maxPages?: number;
@@ -40,7 +32,12 @@ export function sameOriginPaginationUrl(
 	}
 	const url = new URL(href, base);
 	const origin = new URL(base).origin;
-	if (url.protocol !== 'https:' || url.origin !== origin) {
+	if (
+		url.protocol !== 'https:' ||
+		url.origin !== origin ||
+		url.username !== '' ||
+		url.password !== ''
+	) {
 		throw new Error('Unsafe pagination link: expected the BattleMetrics HTTPS origin');
 	}
 	return url;

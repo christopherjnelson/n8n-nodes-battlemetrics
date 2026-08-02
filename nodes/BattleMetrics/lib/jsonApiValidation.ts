@@ -3,6 +3,7 @@ import type {
 	JsonApiError,
 	JsonApiResource,
 	JsonApiResourceIdentifier,
+	JsonApiSuccessDocument,
 } from './jsonApi';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -70,4 +71,27 @@ export function requireSingleResource(
 		throw new Error(`Malformed JSON:API envelope: expected resource type ${expectedType}`);
 	}
 	return document.data;
+}
+
+export interface JsonApiCollectionDocument extends JsonApiSuccessDocument {
+	data: JsonApiResource[];
+}
+
+export function requireCollection(
+	document: JsonApiDocument,
+	expectedType?: string,
+): JsonApiCollectionDocument {
+	if ('errors' in document) throw new Error('BattleMetrics returned a JSON:API error document');
+	if (!Array.isArray(document.data)) {
+		throw new Error('Malformed JSON:API envelope: expected a resource collection');
+	}
+	if (
+		expectedType !== undefined &&
+		document.data.some((resource) => resource.type !== expectedType)
+	) {
+		throw new Error(
+			`Malformed JSON:API envelope: expected every resource type to be ${expectedType}`,
+		);
+	}
+	return document as JsonApiCollectionDocument;
 }
