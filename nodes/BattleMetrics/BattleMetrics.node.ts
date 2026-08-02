@@ -1,5 +1,4 @@
 import type {
-	ICredentialTestFunction,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
@@ -29,7 +28,6 @@ export class BattleMetrics implements INodeType {
 			{
 				name: 'battleMetricsApi',
 				required: true,
-				testedBy: 'battleMetricsApiCredentialTest',
 			},
 		],
 		properties: [
@@ -67,16 +65,6 @@ export class BattleMetrics implements INodeType {
 				displayOptions: { show: { resource: ['server'], operation: ['get'] } },
 			},
 		],
-	};
-
-	methods = {
-		credentialTest: {
-			battleMetricsApiCredentialTest: (async () => ({
-				status: 'Error',
-				message:
-					'Automatic validation is unavailable because no endpoint was verified that separates token validity from subscription and resource access. Save the credential and run Server: Get with an approved server ID.',
-			})) as ICredentialTestFunction,
-		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {

@@ -24,7 +24,6 @@ describe('package and node metadata', () => {
 			{
 				name: 'battleMetricsApi',
 				required: true,
-				testedBy: 'battleMetricsApiCredentialTest',
 			},
 		]);
 	});
@@ -38,9 +37,12 @@ describe('package and node metadata', () => {
 					displayName: 'Access Token',
 					name: 'accessToken',
 					typeOptions: { password: true },
+					required: true,
 				}),
 			]),
 		);
+		expect(credential.properties[0]?.description).toContain('cannot prevalidate');
+		expect(credential.properties[0]?.description).toContain('eligible BattleMetrics subscription');
 	});
 
 	it('injects bearer authentication without exposing a base URL', () => {
@@ -54,12 +56,11 @@ describe('package and node metadata', () => {
 		).toBe(false);
 	});
 
-	it('reports the credential-test limitation without fabricating an endpoint', async () => {
-		const test = node.methods?.credentialTest?.battleMetricsApiCredentialTest;
-		expect(test).toBeTypeOf('function');
-		const result = await test?.call({} as never, {} as never);
-		expect(result).toMatchObject({ status: 'Error' });
-		expect(result?.message).toContain('Automatic validation is unavailable');
+	it('does not register a misleading credential test', () => {
+		expect(node.description.credentials?.[0]).not.toHaveProperty('testedBy');
+		expect(
+			(node as unknown as { methods?: { credentialTest?: unknown } }).methods?.credentialTest,
+		).toBeUndefined();
 	});
 
 	it('uses the fixed official origin', () => {

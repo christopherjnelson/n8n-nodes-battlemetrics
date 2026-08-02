@@ -20,7 +20,8 @@ export class BattleMetricsApi implements ICredentialType {
 			typeOptions: { password: true },
 			default: '',
 			required: true,
-			description: 'A BattleMetrics personal access token. It is stored only in n8n credentials.',
+			description:
+				'A BattleMetrics personal access token. A token may not include REST API access without an eligible BattleMetrics subscription. n8n cannot prevalidate this reliably, so the credential is validated when an operation runs. It is stored only in n8n credentials.',
 		},
 	];
 
