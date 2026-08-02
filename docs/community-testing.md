@@ -2,12 +2,28 @@
 
 Normal tests and CI are fully synthetic and must never contact BattleMetrics.
 
-When a live test phase is approved, use a separate opt-in command that fails closed unless all dedicated
-environment variables are present. Use a subscribed test account and least-privilege token stored outside
-the repository. Begin with read-only Server Get against an owner-approved, non-sensitive server ID. Log
-only status, request ID, schema assertions, and timings—never authorization headers or response bodies.
+The repository provides `pnpm run verify:live`. It fails closed unless
+`BATTLEMETRICS_ACCESS_TOKEN` is set, performs only read-only `GET /servers`, and summarizes sanitized
+status, content type, envelope shape, pagination form, and relevant rate-limit headers. It does not log
+authorization headers, token values, resource IDs, or response bodies and is not run by normal tests or
+CI.
 
-Before collection reads, provide synthetic search criteria and small limits. Before any moderation test,
+Enter the token without putting its value in shell history:
+
+```sh
+read -rsp "BattleMetrics access token: " BATTLEMETRICS_ACCESS_TOKEN
+echo
+export BATTLEMETRICS_ACCESS_TOKEN
+pnpm run verify:live
+unset BATTLEMETRICS_ACCESS_TOKEN
+```
+
+Use a subscribed test account and least-privilege token stored outside the repository. If later live
+work needs Server Get, require `BATTLEMETRICS_SERVER_ID` and an owner-approved, non-sensitive server ID.
+Never extend the harness to writes without a separate approved phase.
+
+Before filtered collection reads, verify every query field in current first-party documentation and use
+synthetic search criteria and small limits. Before any moderation test,
 provide a disposable organization and ban list, a synthetic player/identifier permitted for testing, an
 explicit cleanup plan, and human approval. Writes must run serially and verify both the intended mutation
 and cleanup. Do not use production organizations, real ban reasons, player notes, flags, or private

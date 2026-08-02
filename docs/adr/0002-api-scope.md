@@ -1,12 +1,12 @@
 # ADR 0002: Read-first `0.1.0` scope
 
-- Status: Accepted recommendation; only Server Get is currently implemented
+- Status: Accepted recommendation; Server Get and conservative Get Many are currently implemented
 - Date: 2026-08-02
 
 ## Recommended exact `0.1.0` operations
 
 1. Server: Get
-2. Server: Get Many/Search
+2. Server: Get Many (search/filter controls deferred pending first-party verification)
 3. Player: Get
 4. Player: Get Many/Search
 5. Game: Get Many

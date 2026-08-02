@@ -17,3 +17,12 @@ not discard forward-compatible API data. Never coerce an ID to a number.
 A split-resource output mode is deferred. It requires explicit rules for copying top-level links/meta,
 included-resource linkage, truncation, collection ordering, empty collections, and source item pairing.
 Silently flattening today would lose information and make later behavior harder to correct.
+
+## Phase 1A collection amendment
+
+Server Get Many returns one honest combined envelope per source input. It merges primary `data` in API
+order, applies the user Limit to primary resources, preserves relationships, and deduplicates `included`
+by exact string `type` + `id` while retaining first-seen order. Original page `links`, `meta`, and
+`jsonapi` objects are stored under `meta.n8n.sourcePageContext`; they are not promoted as links or meta
+for the combined local result. `meta.n8n` also records page count, returned primary-resource count,
+applied limit, and whether the result was truncated.
