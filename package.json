@@ -1,0 +1,68 @@
+{
+	"name": "n8n-nodes-battlemetrics",
+	"version": "0.1.0",
+	"description": "Unofficial n8n community node foundation for the BattleMetrics API",
+	"license": "MIT",
+	"homepage": "https://github.com/christopherjnelson/n8n-nodes-battlemetrics#readme",
+	"keywords": [
+		"n8n-community-node-package",
+		"n8n",
+		"battlemetrics"
+	],
+	"author": {
+		"name": "Christopher J. Nelson",
+		"email": "christopherjnelson@proton.me"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/christopherjnelson/n8n-nodes-battlemetrics.git"
+	},
+	"bugs": {
+		"url": "https://github.com/christopherjnelson/n8n-nodes-battlemetrics/issues"
+	},
+	"type": "commonjs",
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"format": "prettier --write .",
+		"format:check": "prettier --check .",
+		"lint": "n8n-node lint",
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit --incremental false && tsc -p tsconfig.test.json",
+		"validate": "n8n-node lint"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"CHANGELOG.md",
+		"LICENSE",
+		"THIRD_PARTY_NOTICES.md",
+		"SECURITY.md"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/BattleMetricsApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/BattleMetrics/BattleMetrics.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "0.41.2",
+		"@types/node": "24.10.1",
+		"eslint": "9.32.0",
+		"prettier": "3.6.2",
+		"typescript": "5.9.2",
+		"vitest": "4.0.18"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	},
+	"engines": {
+		"node": ">=22.0"
+	},
+	"packageManager": "pnpm@11.15.0"
+}
