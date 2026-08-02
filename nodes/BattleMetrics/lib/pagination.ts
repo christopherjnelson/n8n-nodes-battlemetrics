@@ -27,7 +27,7 @@ export function sameOriginPaginationUrl(
 ): URL | null {
 	if (link === null) return null;
 	const href = typeof link === 'string' ? link : link.href;
-	if (!URL.canParse(href, base)) {
+	if (typeof href !== 'string' || href.trim() === '' || !URL.canParse(href, base)) {
 		throw new PaginationError('Unsafe pagination link: malformed URL');
 	}
 	const url = new URL(href, base);

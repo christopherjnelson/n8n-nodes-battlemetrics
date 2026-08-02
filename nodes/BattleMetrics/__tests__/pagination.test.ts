@@ -37,6 +37,8 @@ describe('pagination', () => {
 
 	it('rejects malformed links', () => {
 		expect(() => sameOriginPaginationUrl('https://[malformed')).toThrow('malformed URL');
+		expect(() => sameOriginPaginationUrl({} as never)).toThrow('malformed URL');
+		expect(() => sameOriginPaginationUrl({ href: '' })).toThrow('malformed URL');
 	});
 
 	it('preserves API page and resource order', async () => {

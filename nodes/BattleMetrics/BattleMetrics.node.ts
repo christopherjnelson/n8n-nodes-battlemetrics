@@ -150,6 +150,13 @@ export class BattleMetrics implements INodeType {
 				const result = await collectPages(
 					initial,
 					async (url) => {
+						if (url.pathname !== '/servers') {
+							throw new NodeOperationError(
+								this.getNode(),
+								'Unsafe pagination link: expected the /servers path',
+								{ itemIndex },
+							);
+						}
 						const next = await battleMetricsApiRequestUrl.call(this, {
 							method: 'GET',
 							url,

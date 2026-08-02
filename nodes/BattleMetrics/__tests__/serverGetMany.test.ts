@@ -265,4 +265,17 @@ describe('Server: Get Many', () => {
 		expect(JSON.stringify(outputs)).not.toContain(token);
 		expect(mock.http).toHaveBeenCalledTimes(1);
 	});
+
+	it('does not follow a same-origin next link to another resource', async () => {
+		const mock = collectionContext(
+			[{ returnAll: true }],
+			[{ data: [server('one')], links: { next: '/players?page=2' } }],
+			true,
+		);
+		const [outputs] = await new BattleMetrics().execute.call(
+			mock.value as unknown as IExecuteFunctions,
+		);
+		expect(outputs?.[0]?.json.error).toContain('expected the /servers path');
+		expect(mock.http).toHaveBeenCalledTimes(1);
+	});
 });
