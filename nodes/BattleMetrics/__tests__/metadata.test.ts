@@ -67,6 +67,24 @@ describe('package and node metadata', () => {
 		expect(BATTLEMETRICS_API_ORIGIN).toBe('https://api.battlemetrics.com');
 	});
 
+	it('exposes only verified Server collection controls', () => {
+		const operation = node.description.properties.find((property) => property.name === 'operation');
+		expect(operation?.options).toEqual(
+			expect.arrayContaining([expect.objectContaining({ name: 'Get Many', value: 'getAll' })]),
+		);
+		expect(node.description.properties).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ name: 'returnAll', type: 'boolean' }),
+				expect.objectContaining({ name: 'limit', type: 'number' }),
+			]),
+		);
+		for (const unverified of ['search', 'game', 'country', 'region', 'status', 'sort', 'include']) {
+			expect(node.description.properties.some((property) => property.name === unverified)).toBe(
+				false,
+			);
+		}
+	});
+
 	it('has correct package metadata and exports', () => {
 		expect(packageJson).toMatchObject({
 			name: 'n8n-nodes-battlemetrics',

@@ -53,6 +53,54 @@ describe('safe error normalization', () => {
 			{ operation: 'Get', itemIndex: 0 },
 		);
 		expect(normalized.context.retryAfter).toBe('12');
+		expect(normalized.context.category).toBe('rateLimited');
 		expect(JSON.stringify(normalized)).not.toContain('authorization');
+	});
+
+	it.each([
+		[401, 'The authentication token provided is invalid or expired', 'invalidCredential'],
+		[403, 'A subscription is required to use the API', 'subscriptionRequired'],
+		[403, 'You may not access this organization', 'permissionDenied'],
+		[404, 'Resource not found', 'notFound'],
+		[429, 'Too many requests', 'rateLimited'],
+		[500, 'Internal server error', 'serverError'],
+	] as const)('classifies HTTP %s as %s-safe category %s', (statusCode, detail, category) => {
+		const normalized = normalizeError(
+			{
+				response: {
+					statusCode,
+					body: { errors: [{ status: String(statusCode), title: 'Request failed', detail }] },
+				},
+			},
+			{ operation: 'Server: Get Many', itemIndex: 0 },
+		);
+		expect(normalized.context.category).toBe(category);
+	});
+
+	it.each([
+		['Request timed out', 'timeout'],
+		['ECONNRESET network failure', 'networkError'],
+		['Unexpected token in JSON', 'malformedResponse'],
+	] as const)('classifies transport failure %s as %s', (message, category) => {
+		expect(
+			normalizeError(new Error(message), { operation: 'Server: Get Many', itemIndex: 0 }).context
+				.category,
+		).toBe(category);
+	});
+
+	it('removes a token from API error documents and all visible fields', () => {
+		const token = 'synthetic-secret-token-in-body';
+		const normalized = normalizeError(
+			{
+				response: {
+					statusCode: 401,
+					body: {
+						errors: [{ status: '401', title: 'Unauthorized', detail: `Bearer ${token}` }],
+					},
+				},
+			},
+			{ operation: 'Server: Get Many', itemIndex: 0 },
+		);
+		expect(JSON.stringify(normalized)).not.toContain(token);
 	});
 });

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { requireSingleResource, validateJsonApiDocument } from '../lib/jsonApiValidation';
+import {
+	requireCollection,
+	requireSingleResource,
+	validateJsonApiDocument,
+} from '../lib/jsonApiValidation';
 
 describe('JSON:API validation', () => {
 	it('accepts a single resource', () => {
@@ -72,5 +76,24 @@ describe('JSON:API validation', () => {
 		expect(() => requireSingleResource(document, 'server')).toThrow(
 			'expected resource type server',
 		);
+	});
+
+	it('requires a collection of the expected resource type', () => {
+		const document = validateJsonApiDocument({
+			data: [
+				{ type: 'server', id: 'one' },
+				{ type: 'server', id: 'two' },
+			],
+		});
+		expect(requireCollection(document, 'server').data).toHaveLength(2);
+		expect(() => requireCollection(validateJsonApiDocument({ data: null }), 'server')).toThrow(
+			'expected a resource collection',
+		);
+		expect(() =>
+			requireCollection(
+				validateJsonApiDocument({ data: [{ type: 'player', id: 'one' }] }),
+				'server',
+			),
+		).toThrow('expected every resource type to be server');
 	});
 });

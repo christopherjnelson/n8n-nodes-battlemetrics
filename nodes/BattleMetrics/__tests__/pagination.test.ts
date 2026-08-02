@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { collectPages, sameOriginPaginationUrl } from '../lib/pagination';
+import type { JsonApiDocument } from '../lib/jsonApi';
 
 const resource = (id: string) => ({ type: 'server', id });
 
@@ -27,6 +28,12 @@ describe('pagination', () => {
 			expect(() => sameOriginPaginationUrl(link)).toThrow('Unsafe pagination link');
 		},
 	);
+
+	it('rejects same-host URLs containing user information', () => {
+		expect(() =>
+			sameOriginPaginationUrl('https://user:secret@api.battlemetrics.com/servers'),
+		).toThrow('Unsafe pagination link');
+	});
 
 	it('rejects malformed links', () => {
 		expect(() => sameOriginPaginationUrl('https://[malformed')).toThrow('malformed URL');
@@ -88,5 +95,32 @@ describe('pagination', () => {
 		);
 		expect(result.itemCount).toBe(2);
 		expect(fetchNext).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		{ data: [] } as JsonApiDocument,
+		{ data: [], links: {} } as JsonApiDocument,
+		{ data: [], links: { next: null } } as JsonApiDocument,
+	])('handles empty first pages and absent/null next links: %#', async (document) => {
+		const fetchNext = vi.fn();
+		const result = await collectPages(document, fetchNext);
+		expect(result).toMatchObject({ itemCount: 0, documents: [document] });
+		expect(fetchNext).not.toHaveBeenCalled();
+	});
+
+	it('propagates a later-page error', async () => {
+		await expect(
+			collectPages({ data: [resource('1')], links: { next: '/servers?page=2' } }, async () => {
+				throw new Error('Synthetic later-page failure');
+			}),
+		).rejects.toThrow('Synthetic later-page failure');
+	});
+
+	it('rejects a malformed next link while collecting', async () => {
+		await expect(
+			collectPages({ data: [resource('1')], links: { next: 'https://[malformed' } }, async () => ({
+				data: [],
+			})),
+		).rejects.toThrow('malformed URL');
 	});
 });

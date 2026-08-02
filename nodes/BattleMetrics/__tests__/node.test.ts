@@ -15,7 +15,11 @@ function executionContext(ids: string[], continueOnFail = false) {
 		http,
 		value: {
 			getInputData: () => inputs,
-			getNodeParameter: (_name: string, index: number) => ids[index],
+			getNodeParameter: (name: string, index: number) => {
+				if (name === 'operation') return 'get';
+				if (name === 'serverId') return ids[index];
+				throw new Error(`Unexpected parameter: ${name}`);
+			},
 			continueOnFail: () => continueOnFail,
 			getNode: () => ({
 				name: 'BattleMetrics',
