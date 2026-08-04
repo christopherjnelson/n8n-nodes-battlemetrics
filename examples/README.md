@@ -1,7 +1,8 @@
 # Example workflows
 
-Import either JSON file into n8n after installing `n8n-nodes-battlemetrics`.
+Import any JSON file into n8n after installing `n8n-nodes-battlemetrics`.
 
+- `get-games.json` demonstrates Game → Get Many with Return All disabled and Limit 10.
 - `get-server.json` demonstrates Server → Get with a synthetic placeholder ID.
 - `get-servers.json` demonstrates Server → Get Many with Return All disabled and Limit 10.
 

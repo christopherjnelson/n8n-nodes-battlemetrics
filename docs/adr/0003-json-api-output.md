@@ -26,3 +26,10 @@ by exact string `type` + `id` while retaining first-seen order. Original page `l
 `jsonapi` objects are stored under `meta.n8n.sourcePageContext`; they are not promoted as links or meta
 for the combined local result. `meta.n8n` also records page count, returned primary-resource count,
 applied limit, and whether the result was truncated.
+
+## Phase 1D Game collection amendment
+
+Game Get Many preserves a one-page envelope, trimming only `data` when a local Limit applies. When more
+than one page is fetched it uses the same combined-envelope rules as Server Get Many: API order,
+included-resource deduplication by exact string `type` and `id`, and source page context under
+`meta.n8n.sourcePageContext` without root pagination links.

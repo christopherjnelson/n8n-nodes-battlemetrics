@@ -1,6 +1,6 @@
 # ADR 0002: Read-first `0.1.0` scope
 
-- Status: Accepted recommendation; Server Get and conservative Get Many are currently implemented
+- Status: Accepted recommendation; Server Get/Get Many and Game Get Many are currently implemented
 - Date: 2026-08-02
 
 ## Recommended exact `0.1.0` operations
@@ -9,7 +9,7 @@
 2. Server: Get Many (search/filter controls deferred pending first-party verification)
 3. Player: Get
 4. Player: Get Many/Search
-5. Game: Get Many
+5. Game: Get Many (implemented without unverified query parameters)
 6. Organization: Get
 7. Organization: Get Many
 8. Ban List: Get
@@ -17,9 +17,11 @@
 10. Ban: Get
 11. Ban: Get Many
 
-This is Candidate A, read-first. Each deferred operation remains contingent on verification of the
-current official method, path, filters, sorting, includes, pagination, media type, exact token scope,
-organization permission, and response schema. Proposed scope is not an implementation claim.
+This is Candidate A, read-first. Game Get Many was promoted after bounded subscribed verification of
+`GET /games`; no other Game operation was added. Each deferred operation remains contingent on
+verification of the current official method, path, filters, sorting, includes, pagination, media type,
+exact token scope, organization permission, and response schema. Proposed scope is not an implementation
+claim.
 
 ## Deferred
 

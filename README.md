@@ -9,20 +9,21 @@ moderation records can contain sensitive data.
 
 ## Current scope
 
-The current package implements exactly two read-only operations:
+The current package implements exactly three read-only operations:
 
 - **Server → Get**: `GET https://api.battlemetrics.com/servers/{serverId}`
 - **Server → Get Many**: `GET https://api.battlemetrics.com/servers`
+- **Game → Get Many**: `GET https://api.battlemetrics.com/games`
 
 It also includes typed transport, input validation, JSON:API validation and preservation, bounded
 same-origin pagination, safe error normalization, an opt-in read-only live verifier, and mocked tests.
-Get Many uses the API's default server collection ordering and exposes only **Return All** and a local
-**Limit**. Search, game, country/region, status, sort,
-include, and page-size parameters remain deferred because their current first-party contracts could not
-be retrieved. There is no trigger node, websocket support, arbitrary request operation, moderation
+Get Many uses each API collection's default ordering and exposes only **Return All** and a local
+**Limit**. Search, filters, sorting, includes, sparse fields, page-size, offset, and cursor controls
+remain deferred because their current first-party contracts could not be retrieved. There is no Game
+Get-by-ID, trigger node, websocket support, arbitrary request operation, moderation
 write, or user-configurable API host.
 
-The broader read list—Player Get/Get Many, Game Get Many, Organization Get/Get Many, Ban List Get/Get
+The broader read list—Player Get/Get Many, Organization Get/Get Many, Ban List Get/Get
 Many, and Ban Get/Get Many—is a proposed roadmap, not a `0.1.0` promise. Every resource remains deferred
 until its current official method, parameters, permissions, and response contract can be re-verified.
 Ban create, update, and delete are not recommended for `0.1.0`.
@@ -61,6 +62,10 @@ access may also require an eligible BattleMetrics subscription. The credential a
 `Authorization: Bearer …` through n8n's credential system. The token is never a node parameter, output
 field, log field, fixture, or error detail.
 
+The shared transport reads the credential and attaches the Bearer header itself. The credential does
+not opt into n8n proxy authentication because n8n 2.30.6 otherwise injects an unrestricted Custom API
+Call into community nodes; that would exceed this package's verified operation scope.
+
 To create a token, sign in to BattleMetrics, open the official
 [developer area](https://www.battlemetrics.com/developers), select **Personal Access Tokens**, create a
 token, and save it immediately in n8n credentials. Choose only the permissions needed by your intended
@@ -72,11 +77,11 @@ The credential intentionally has no network test button. n8n cannot reliably pre
 subscription, scope, and resource-permission states, so the required secret is validated when an
 operation runs. Current safe observation distinguishes an invalid Bearer token (`401`) from the
 subscription-required response (`403`). On 2026-08-04, a subscribed owner token successfully completed
-Server Get and Server Get Many with `200` responses. A subscription response is never presented as
+Server Get, Server Get Many, and Game Get Many with `200` responses. A subscription response is never presented as
 successful credential validation.
 
-No optional personal-access-token permissions were selected or required for the subscribed Server Get
-and Get Many checks. That observation applies only to these two tested Server reads; other resources,
+No optional personal-access-token permissions were selected or required for the subscribed Server and
+Game checks. This is a direct observation for the tested token, not a universal scope or plan claim; other resources,
 organization roles, and future operations require separate verification.
 
 ### Permission status
@@ -84,6 +89,7 @@ organization roles, and future operations require separate verification.
 | Operation group          | Token required by this node | Exact BattleMetrics permission/scope                               |
 | ------------------------ | --------------------------- | ------------------------------------------------------------------ |
 | Server Get/Get Many      | Yes                         | No optional token permission required in the subscribed test       |
+| Game Get Many            | Yes                         | No optional token permission required in the subscribed test       |
 | Proposed read operations | Yes                         | Unresolved per endpoint; must be verified before implementation    |
 | Moderation writes        | Not implemented             | Unresolved; organization role/resource permission is also expected |
 
@@ -97,7 +103,8 @@ Server Get returns one n8n item containing the complete JSON:API envelope. `data
 `relationships`, `included`, `links`, and `meta` are not flattened away. The item is linked to its source
 with `pairedItem`.
 
-Server Get Many returns one combined envelope per source item. Primary `data` resources are merged in
+Game Get Many preserves a single-page envelope, trimming only `data` when needed. For multiple pages,
+both collection operations return one combined envelope per source item. Primary `data` resources are merged in
 API order and trimmed to the local Limit. `included` resources are preserved in first-seen order and
 deduplicated by the exact string pair `type` + `id`; relationships remain untouched. Original page
 `links`, `meta`, and `jsonapi` context is preserved under `meta.n8n.sourcePageContext`. Original links are
@@ -105,7 +112,7 @@ not copied to the combined top level, so they are not misrepresented as links fo
 result.
 
 Pagination follows `links.next`, accepts relative links and absolute HTTPS links on
-`api.battlemetrics.com`, requires the `/servers` path, rejects other protocols/origins and URL user
+`api.battlemetrics.com`, requires the selected `/servers` or `/games` path, rejects other protocols/origins and URL user
 information, preserves page order, detects repeated links, and enforces 100-page and
 10,000-primary-item caps. It performs no sleep or retry loop. `429` is surfaced with a validated
 `Retry-After` value when one is present.
@@ -122,6 +129,11 @@ did not expose REST quota, remaining, reset, or `Retry-After` headers. They did 
 private cache control, and a cache-bypass status. The documented outbound-webhook limits are a different
 system and are not used as REST limits here.
 
+The two observed Game pages each contained 10 `game` resources. They had attributes `maxPlayers24H`,
+`maxPlayers30D`, `maxPlayers7D`, `metadata`, `minPlayers24H`, `minPlayers30D`, `minPlayers7D`, `name`,
+`players`, `playersByCountry`, `servers`, and `serversByCountry`; relationships, `included`, `meta`, and
+`jsonapi` were absent. Game responses used public cache control and `api-version: 0.1.0`.
+
 ## Example workflows
 
 Sanitized importable workflows are in [`examples/`](examples/README.md):
@@ -130,15 +142,18 @@ Sanitized importable workflows are in [`examples/`](examples/README.md):
   placeholder ID.
 - [`get-servers.json`](examples/get-servers.json) uses Manual Trigger and Server → Get Many with Return
   All disabled and Limit 10.
+- [`get-games.json`](examples/get-games.json) uses Manual Trigger and Game → Get Many with Return All
+  disabled and Limit 10.
 
 The examples contain no credential ID, token, execution output, or real server data. After import,
 create or select a BattleMetrics API credential and replace the synthetic Server ID where applicable.
 
 ## Opt-in live verification
 
-Normal tests and CI never contact BattleMetrics. The local verifier requires non-empty
-`BATTLEMETRICS_ACCESS_TOKEN` and `BATTLEMETRICS_SERVER_ID` values. It performs read-only Server Get and
-Server Get Many requests, follows at most one safe collection pagination link, and makes one bounded
+Normal tests and CI never contact BattleMetrics. The local verifier requires a non-empty
+`BATTLEMETRICS_ACCESS_TOKEN`; `BATTLEMETRICS_SERVER_ID` is optional and enables existing Server
+single-resource checks. It performs read-only Server and Game collection requests, follows at most one
+safe pagination link per collection, and makes one bounded
 synthetic invalid-token check plus one bounded synthetic missing-server check. It never prints token or
 server-ID values, request headers, response bodies, resource values, or full URLs. Output is limited to
 sanitized status, media type, structural key names, pagination target validity, safe numeric/rate/cache
@@ -152,9 +167,16 @@ node --env-file=.env scripts/live-verify.mjs
 ```
 
 Do not redirect verifier output into a tracked file. A Premium subscribed run passed on 2026-08-04:
-Server Get and two Server Get Many pages returned `200 application/json`, the synthetic invalid token
+Server Get, two Server Get Many pages, and two Game Get Many pages returned `200 application/json`, the synthetic invalid token
 returned `401`, and the synthetic missing server returned `404`. Only sanitized structure was retained;
 no live body, credential, configured ID, player information, or private organization value was stored.
+
+The exact Phase 1D tarball was also installed in a fresh localhost-only n8n 2.30.6 profile on Node.js
+24.18.0. Editor metadata showed only Game and Server, with only Game Get Many for Game and no Custom API
+Call. The checked-in example imported. Live Limit 5 returned exactly five games; Limit 11 followed one
+safe next page, returned exactly 11 games, preserved exact string IDs, and produced a two-page combined
+envelope without root pagination links. Sanitized inspection found no token, Authorization, or Bearer
+text in execution output; the disposable database, output, profile, and tarball were removed afterward.
 
 ## Privacy and AI-tool safety
 
@@ -166,7 +188,7 @@ Never include access tokens, private execution data, organization details, priva
 private moderation data, notes, ban reasons, flags, or unredacted API responses in issues. Use synthetic
 examples.
 
-The node sets `usableAsTool: true`. All current actions are read-only, use only the Server resource, and
+The node sets `usableAsTool: true`. All current actions are read-only, use only Server or Game, and
 use a fixed origin. If destructive operations are added later, workflows using AI agents must place
 them behind explicit human approval and narrow credentials; ambiguous autonomous moderation is unsafe.
 
