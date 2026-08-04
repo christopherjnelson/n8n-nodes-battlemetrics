@@ -14,8 +14,10 @@ function executionContext(ids: string[], continueOnFail = false) {
 	return {
 		http,
 		value: {
+			getCredentials: async () => ({ accessToken: 'synthetic-token' }),
 			getInputData: () => inputs,
 			getNodeParameter: (name: string, index: number) => {
+				if (name === 'resource') return 'server';
 				if (name === 'operation') return 'get';
 				if (name === 'serverId') return ids[index];
 				throw new Error(`Unexpected parameter: ${name}`);

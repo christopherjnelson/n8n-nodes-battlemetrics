@@ -153,6 +153,10 @@ try {
 		'Packed credential display name is incorrect',
 	);
 	assert(
+		credential.authenticate === undefined,
+		'Packed credential enables n8n proxy authentication and arbitrary API-call injection',
+	);
+	assert(
 		credential.properties?.some(
 			(property) =>
 				property.name === 'accessToken' &&
@@ -165,12 +169,28 @@ try {
 		node.description.credentials?.[0]?.testedBy === undefined,
 		'Packed node exposes a credential test',
 	);
+	const resources = node.description.properties.find((property) => property.name === 'resource');
+	const gameOperation = node.description.properties.find(
+		(property) =>
+			property.name === 'operation' && property.displayOptions?.show?.resource?.includes('game'),
+	);
+	assert(
+		JSON.stringify(resources?.options?.map(({ value }) => value)) ===
+			JSON.stringify(['game', 'server']),
+		'Packed node resources are missing, unexpected, or unstable',
+	);
+	assert(
+		JSON.stringify(gameOperation?.options?.map(({ value }) => value)) ===
+			JSON.stringify(['getAll']),
+		'Packed Game operations are missing, unexpected, or unstable',
+	);
 
 	const exampleFiles = readdirSync(join(extractedPackage, 'examples'))
 		.filter((name) => name.endsWith('.json'))
 		.sort();
 	assert(
-		JSON.stringify(exampleFiles) === JSON.stringify(['get-server.json', 'get-servers.json']),
+		JSON.stringify(exampleFiles) ===
+			JSON.stringify(['get-games.json', 'get-server.json', 'get-servers.json']),
 		'Packed examples are missing or unexpected',
 	);
 	for (const name of exampleFiles) {

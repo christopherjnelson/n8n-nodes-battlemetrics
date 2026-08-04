@@ -13,6 +13,7 @@ function context(response: unknown) {
 	return {
 		request,
 		value: {
+			getCredentials: async () => ({ accessToken: 'synthetic-token' }),
 			helpers: { httpRequestWithAuthentication: request },
 		},
 	};
@@ -46,7 +47,10 @@ describe('BattleMetrics transport', () => {
 			expect.objectContaining({
 				method: 'GET',
 				url: 'https://api.battlemetrics.com/servers/opaque-id',
-				headers: { Accept: JSON_API_MEDIA_TYPE },
+				headers: {
+					Accept: JSON_API_MEDIA_TYPE,
+					Authorization: 'Bearer synthetic-token',
+				},
 				timeout: DEFAULT_TIMEOUT_MS,
 			}),
 		);
@@ -97,7 +101,11 @@ describe('BattleMetrics transport', () => {
 		expect(mock.request).toHaveBeenCalledWith(
 			'battleMetricsApi',
 			expect.objectContaining({
-				headers: { Accept: JSON_API_MEDIA_TYPE, 'Content-Type': JSON_API_MEDIA_TYPE },
+				headers: {
+					Accept: JSON_API_MEDIA_TYPE,
+					Authorization: 'Bearer synthetic-token',
+					'Content-Type': JSON_API_MEDIA_TYPE,
+				},
 			}),
 		);
 	});
@@ -119,7 +127,10 @@ describe('BattleMetrics transport', () => {
 	it('never includes a credential value in normalized errors', async () => {
 		const token = 'synthetic-super-secret-token';
 		const request = vi.fn().mockRejectedValue(new Error(`Authorization: Bearer ${token}`));
-		const value = { helpers: { httpRequestWithAuthentication: request } };
+		const value = {
+			getCredentials: async () => ({ accessToken: token }),
+			helpers: { httpRequestWithAuthentication: request },
+		};
 		await expect(
 			battleMetricsApiRequest.call(value as unknown as IExecuteFunctions, {
 				method: 'GET',

@@ -58,6 +58,19 @@ describe('sanitized live verifier', () => {
 		expect(JSON.stringify(summary)).not.toContain('https://');
 	});
 
+	it('validates Game pagination against the Game collection path', () => {
+		expect(paginationTarget('/games?page%5Boffset%5D=100', '/games')).toMatchObject({
+			presence: 'present',
+			pathValid: true,
+			safe: true,
+		});
+		expect(paginationTarget('/servers?page%5Boffset%5D=100', '/games')).toMatchObject({
+			presence: 'present',
+			pathValid: false,
+			safe: false,
+		});
+	});
+
 	it.each([
 		[401, { errors: [{ detail: 'Invalid token' }] }, 'invalidCredential'],
 		[403, { errors: [{ detail: 'A subscription is required' }] }, 'subscriptionRequired'],

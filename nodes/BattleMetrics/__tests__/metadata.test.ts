@@ -52,12 +52,8 @@ describe('package and node metadata', () => {
 		expect(credential.properties[0]?.description).toContain('eligible BattleMetrics subscription');
 	});
 
-	it('injects bearer authentication without exposing a base URL', () => {
-		expect(credential.authenticate).toEqual(
-			expect.objectContaining({
-				properties: { headers: { Authorization: '=Bearer {{$credentials.accessToken}}' } },
-			}),
-		);
+	it('keeps the credential non-proxy so n8n cannot inject an arbitrary API call', () => {
+		expect(credential).not.toHaveProperty('authenticate');
 		expect(
 			credential.properties.some((property) => property.name.toLowerCase().includes('url')),
 		).toBe(false);
@@ -74,10 +70,24 @@ describe('package and node metadata', () => {
 		expect(BATTLEMETRICS_API_ORIGIN).toBe('https://api.battlemetrics.com');
 	});
 
-	it('exposes only verified Server collection controls', () => {
-		const operation = node.description.properties.find((property) => property.name === 'operation');
-		expect(operation?.options).toEqual(
+	it('exposes only verified collection controls for Server and Game', () => {
+		const operations = node.description.properties.filter(
+			(property) => property.name === 'operation',
+		);
+		const serverOperation = operations.find((property) =>
+			property.displayOptions?.show?.resource?.includes('server'),
+		);
+		const gameOperation = operations.find((property) =>
+			property.displayOptions?.show?.resource?.includes('game'),
+		);
+		expect(serverOperation?.options).toEqual(
 			expect.arrayContaining([expect.objectContaining({ name: 'Get Many', value: 'getAll' })]),
+		);
+		expect(gameOperation?.options).toEqual([
+			expect.objectContaining({ name: 'Get Many', value: 'getAll' }),
+		]);
+		expect(gameOperation?.options).not.toEqual(
+			expect.arrayContaining([expect.objectContaining({ value: 'get' })]),
 		);
 		expect(node.description.properties).toEqual(
 			expect.arrayContaining([
@@ -95,7 +105,11 @@ describe('package and node metadata', () => {
 	it('explains the Server operations without speculative controls', () => {
 		const property = (name: string) =>
 			node.description.properties.find((candidate) => candidate.name === name);
-		const operation = property('operation');
+		const operation = node.description.properties.find(
+			(candidate) =>
+				candidate.name === 'operation' &&
+				candidate.displayOptions?.show?.resource?.includes('server'),
+		);
 		const options = Array.isArray(operation?.options) ? operation.options : [];
 		const get = options.find((option) => 'value' in option && option.value === 'get');
 		const getMany = options.find((option) => 'value' in option && option.value === 'getAll');
@@ -117,6 +131,31 @@ describe('package and node metadata', () => {
 			'Whether to return all results or only up to a given limit',
 		);
 		expect(property('limit')?.description).toBe('Max number of results to return');
+	});
+
+	it('describes Game Get Many and shows canonical controls only for that operation', () => {
+		const resources = node.description.properties.find((property) => property.name === 'resource');
+		expect(resources?.options).toEqual(
+			expect.arrayContaining([expect.objectContaining({ name: 'Game', value: 'game' })]),
+		);
+		const operation = node.description.properties.find(
+			(property) =>
+				property.name === 'operation' && property.displayOptions?.show?.resource?.includes('game'),
+		);
+		const option = Array.isArray(operation?.options) ? operation.options[0] : undefined;
+		expect(option).toMatchObject({
+			name: 'Get Many',
+			value: 'getAll',
+			action: 'Get many games',
+		});
+		expect(option && 'description' in option ? option.description : '').toContain(
+			'no server-side parameters',
+		);
+		for (const name of ['returnAll', 'limit']) {
+			const field = node.description.properties.find((property) => property.name === name);
+			expect(field?.displayOptions?.show?.resource).toContain('game');
+			expect(field?.displayOptions?.show?.operation).toEqual(['getAll']);
+		}
 	});
 
 	it('has correct package metadata and exports', () => {

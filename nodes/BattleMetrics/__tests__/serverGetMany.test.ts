@@ -33,8 +33,10 @@ function collectionContext(
 	return {
 		http,
 		value: {
+			getCredentials: async () => ({ accessToken: 'synthetic-token' }),
 			getInputData: () => inputs,
 			getNodeParameter: (name: string, index: number) => {
+				if (name === 'resource') return 'server';
 				if (name === 'operation') return 'getAll';
 				if (name === 'returnAll') return parameters[index]?.returnAll;
 				if (name === 'limit') return parameters[index]?.limit;

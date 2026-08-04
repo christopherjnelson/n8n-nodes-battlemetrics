@@ -13,12 +13,12 @@ const workflows = workflowFiles.map((name) => ({
 
 describe('example workflows', () => {
 	it('provides the required examples as valid JSON', () => {
-		expect(workflowFiles).toEqual(['get-server.json', 'get-servers.json']);
+		expect(workflowFiles).toEqual(['get-games.json', 'get-server.json', 'get-servers.json']);
 	});
 
 	it.each(workflows)('$name has an importable workflow structure', ({ workflow }) => {
 		expect(workflow).toMatchObject({
-			id: expect.stringMatching(/^phase1c/),
+			id: expect.stringMatching(/^phase1[cd]/),
 			active: false,
 			nodes: expect.any(Array),
 			connections: expect.any(Object),
@@ -30,15 +30,20 @@ describe('example workflows', () => {
 
 	it.each(workflows)(
 		'$name references only the implemented BattleMetrics node operations',
-		({ workflow }) => {
+		({ name, workflow }) => {
 			const nodes = workflow.nodes.filter(
 				(node) => node.type === 'n8n-nodes-battlemetrics.battleMetrics',
 			);
 			expect(nodes).toHaveLength(1);
-			expect(nodes[0]).toMatchObject({
-				typeVersion: 1,
-				parameters: { resource: 'server', operation: expect.stringMatching(/^(get|getAll)$/) },
-			});
+			expect(nodes[0]).toMatchObject({ typeVersion: 1 });
+			if (name === 'get-games.json') {
+				expect(nodes[0]?.parameters).toMatchObject({ resource: 'game', operation: 'getAll' });
+			} else {
+				expect(nodes[0]?.parameters).toMatchObject({
+					resource: 'server',
+					operation: expect.stringMatching(/^(get|getAll)$/),
+				});
+			}
 		},
 	);
 
