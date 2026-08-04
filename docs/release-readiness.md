@@ -26,10 +26,14 @@
 - [x] Importable synthetic Game Get Many example included and regression tested
 - [x] Importable synthetic Player Get example included and regression tested
 - [x] Player diagnostics retain only structural key names and never enumerate or emit identity values
+- [x] Phase 1F Ban List/Ban reads stopped at the permission checkpoint; no moderation request or
+      speculative operation was added
 - [x] Bounded live Limit matrix covers one page, the observed page boundary, and one safe page follow
 - [x] Runtime `NodeApiError.httpCode` classification is regression tested
 - [x] Light/dark icons rendered in n8n and inspected at 16, 20, and 24 pixels
 - [ ] Explicit `0.1.0` operation set chosen; broader read matrix remains a roadmap
+- [ ] Current first-party Ban List/Ban panels, exact read scopes, and organization permissions captured
+- [ ] Separate least-privilege moderation token and owner-controlled disposable read targets provided
 - [ ] Repository and npm ownership established by the owner
 - [ ] Security private-reporting channel configured
 

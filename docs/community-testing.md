@@ -25,6 +25,13 @@ the verifier for player search, collection enumeration, platform identifiers, or
 Never extend the harness to writes without a separate
 approved phase.
 
+Phase 1F did not add Ban List or Ban checks. The existing token has no optional moderation permissions,
+the current first-party contract panels could not be inspected from this environment, and no
+owner-controlled Ban List ID or existing safe Ban ID was configured. Do not add either ID variable or
+probe a moderation endpoint until the signed-in developer UI confirms the exact read scopes and
+organization permissions and a separate least-privilege subscribed token is available. Never create a
+ban to manufacture a read target.
+
 The Premium subscribed verifier passed on 2026-08-04. The sanitized result established successful
 Server Get and Server Get Many, one absolute same-origin keyset page follow, `401 invalidCredential`,
 and `404 resourceNotFound`. Successful responses used `application/json` with JSON:API-shaped `data`,

@@ -25,6 +25,10 @@ All notable changes to this project will be documented here.
 
 ### Changed
 
+- Recorded the Phase 1F Ban List/Ban permission checkpoint and deferred all moderation reads because
+  the current first-party contract, exact permissions, least-privilege token, and authorized targets
+  were unavailable; no moderation request or operation was added.
+
 - Removed the always-failing credential-test button; credentials are validated when operations run.
 - Classified invalid-token, subscription, permission, rate-limit, transport, and malformed-response
   failures without exposing credentials.

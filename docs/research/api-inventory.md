@@ -1,6 +1,6 @@
 # BattleMetrics API research inventory
 
-Research dates: **2026-08-02**, reviewed **2026-08-04**
+Research dates: **2026-08-02**, reviewed **2026-08-04** (including Phase 1F)
 
 Status: foundation decision record, not a claim that all listed endpoints are implemented
 
@@ -39,6 +39,11 @@ Authoritative sources consulted:
    media type, resource type, identity equality as a boolean, structural key names, top-level member
    presence, and safe headers. It retained no response body, player ID, name, alias, identifier,
    location, activity, session, moderation value, or full URL. No collection request was made.
+8. A Phase 1F moderation-read review on 2026-08-04 retried the current developer documentation
+   through the research browser, direct HTTP, and a fresh disposable headless Chrome profile. The
+   first two routes were denied by `robots.txt` or HTTP 403, and Chrome received a Cloudflare block
+   page. Search-indexed fragments were treated only as discovery evidence. No moderation API request
+   was made, and the disposable browser profile and captured block page were removed.
 
 Third-party libraries and community examples were used only to discover questions and likely resource
 names. They are not cited as contract evidence and do not promote an endpoint to “supported.”
@@ -50,6 +55,38 @@ names. They are not cited as contract evidence and do not promote an endpoint to
 - **Inferred**: evidence suggests the finding, but it is not sufficient for implementation.
 - **Unresolved**: current first-party evidence or a suitable observation was unavailable. Unresolved and
   inferred values are not implemented.
+
+## Phase 1F Ban List and Ban permission checkpoint
+
+The smallest safe Phase 1F implementation set is empty. This is a deliberate permission and contract
+decision, not evidence that the API lacks Ban List or Ban read operations.
+
+| Required finding                | Phase 1F result                                                                                                                                                                                                                                                  | Evidence label / consequence                                                                         |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Candidate methods and paths     | Developer-documentation fragments and prior inventory suggest `GET /ban-lists`, `GET /ban-lists/{banListId}`, `GET /bans`, and `GET /bans/{banId}`, but the current panels could not be opened                                                                   | **Inferred**; none implemented or requested                                                          |
+| Authentication and subscription | The node's existing reads require a Bearer token, and the configured Premium token succeeds for the frozen reads                                                                                                                                                 | **Directly observed** only for Server, Game, and Player; Ban List/Ban behavior **Unresolved**        |
+| Personal-token scope            | The configured development token has no optional permissions. Search-discovery material refers to separate Ban Lists and Bans permission categories, but the current first-party scope labels and whether read/write grants are separable could not be inspected | Existing-token configuration **Directly observed**; exact minimum Ban List/Ban scopes **Unresolved** |
+| Organization permission         | First-party material establishes role-controlled organization data and downstream access to shared bans/files, but it does not expose the exact Ban List/Ban read permission names used by the API                                                               | Permission model **Officially documented**; exact permission names **Unresolved**                    |
+| Personal list support           | First-party material distinguishes personal-only and organization-associated resources generally; it does not establish that a personal Ban List can be read through these candidate endpoints                                                                   | **Unresolved**                                                                                       |
+| Private/shared list differences | First-party file guidance confirms downstream organizations can receive access through shared bans while still needing relevant permissions; endpoint response and list-level behavior are unavailable                                                           | Sharing model **Officially documented**; endpoint behavior **Unresolved**                            |
+| Collection constraints          | A Ban List or ownership constraint for `GET /bans` is safety-critical. No required filter, exact query key, default breadth, sort, include, or pagination contract was accessible                                                                                | **Unresolved**; Ban Get Many is not safe to probe or implement                                       |
+| Safe live targets               | `.env` has no `BATTLEMETRICS_BAN_LIST_ID` or `BATTLEMETRICS_BAN_ID`, and no owner-controlled disposable moderation resource was identified                                                                                                                       | **Directly observed** without reading values; live moderation verification stopped                   |
+
+The existing subscribed token is therefore not a suitable Phase 1F moderation credential: its recorded
+configuration intentionally has no optional permissions, it is reused for the frozen public-directory
+and approved Player checks, and broadening it would violate least privilege. Before Phase 1F can resume,
+the owner must inspect the signed-in first-party developer UI and provide a separate subscribed token
+with only the current read permissions required for Ban Lists and/or Bans. If BattleMetrics exposes only
+combined read/write scope categories, that fact must be recorded and the token must still be isolated
+from workflows capable of writes. The owner must also provide an owner-controlled disposable Ban List ID
+and, for Ban Get, an existing synthetic/non-sensitive Ban ID; this read-only phase must not create one.
+
+A future verifier extension must classify a moderation `403` using the documented response distinction
+before reporting one of: subscription required, token scope missing, organization permission missing,
+resource access denied, or general permission denied. It must not turn an undifferentiated `403` into a
+scope claim. Until the official panels and safe targets are available, response structures, status and
+content type, resource types, attributes, relationships, includes, links, meta, jsonapi, pagination,
+empty results, missing-resource behavior, and rate/cache headers all remain **Unresolved**.
 
 ## Origin, versioning, authentication, and account context
 

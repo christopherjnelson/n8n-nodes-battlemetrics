@@ -31,6 +31,12 @@ Many, and Ban Get/Get Many—is a proposed roadmap, not a `0.1.0` promise. Every
 until its current official method, parameters, permissions, and response contract can be re-verified.
 Ban create, update, and delete are not recommended for `0.1.0`.
 
+Phase 1F promoted no Ban List or Ban operation. The current first-party endpoint panels were blocked in
+this environment, the existing token has no optional moderation permissions, and no owner-controlled
+Ban List or Ban ID was configured. No moderation endpoint was probed. Resume only with an inspectable
+official contract, a separate least-privilege subscribed token, exact organization permissions, and
+owner-controlled test resources; do not broaden the existing development token merely to obtain access.
+
 See [the API inventory](docs/research/api-inventory.md) and [the API scope ADR](docs/adr/0002-api-scope.md).
 
 ## Local development
@@ -89,13 +95,14 @@ organization roles, and future operations require separate verification.
 
 ### Permission status
 
-| Operation group          | Token required by this node | Exact BattleMetrics permission/scope                               |
-| ------------------------ | --------------------------- | ------------------------------------------------------------------ |
-| Server Get/Get Many      | Yes                         | No optional token permission required in the subscribed test       |
-| Game Get Many            | Yes                         | No optional token permission required in the subscribed test       |
-| Player Get               | Yes                         | No optional token permission required in the subscribed test       |
-| Proposed read operations | Yes                         | Unresolved per endpoint; must be verified before implementation    |
-| Moderation writes        | Not implemented             | Unresolved; organization role/resource permission is also expected |
+| Operation group      | Token required by this node | Exact BattleMetrics permission/scope                               |
+| -------------------- | --------------------------- | ------------------------------------------------------------------ |
+| Server Get/Get Many  | Yes                         | No optional token permission required in the subscribed test       |
+| Game Get Many        | Yes                         | No optional token permission required in the subscribed test       |
+| Player Get           | Yes                         | No optional token permission required in the subscribed test       |
+| Ban List/Ban reads   | Not implemented             | Exact token and organization read permissions remain unresolved    |
+| Other proposed reads | Yes                         | Unresolved per endpoint; must be verified before implementation    |
+| Moderation writes    | Not implemented             | Unresolved; organization role/resource permission is also expected |
 
 An anonymous request made during research returned `403` with “A subscription is required to use the
 API.” Authentication does not override BattleMetrics account, subscription, organization, or resource

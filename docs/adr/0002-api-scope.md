@@ -1,6 +1,7 @@
 # ADR 0002: Read-first `0.1.0` scope
 
-- Status: Accepted recommendation; Server Get/Get Many and Game Get Many are currently implemented
+- Status: Accepted recommendation; Server Get/Get Many, Game Get Many, and Player Get are currently
+  implemented
 - Date: 2026-08-02
 
 ## Recommended exact `0.1.0` operations
@@ -25,6 +26,14 @@ verification of the current official method, path, filters, sorting, includes, p
 exact token scope, organization permission, and response schema. Proposed scope is not an implementation
 claim.
 
+Phase 1F reviewed Ban List Get/Get Many and Ban Get/Get Many and promoted none. The current first-party
+developer panels could not be accessed, the configured development token has no optional moderation
+permissions, and no owner-controlled Ban List ID or existing safe Ban ID was configured. Candidate paths
+remain inferred rather than implementation-grade contract evidence. Broadening the existing reused token,
+probing a broad Ban collection, or creating a test ban would violate the phase's permission and read-only
+constraints. These four reads remain deferred until a separate least-privilege token, exact first-party
+scope and organization-permission names, and owner-controlled targets are available.
+
 ## Deferred
 
 Ban create/update/delete, player-identifier reads, notes, flags, activity/audit, triggers, outbound
@@ -33,13 +42,14 @@ reasons, evidence, internal comments, and personal identifiers. Flags and audit 
 decisions and staff activity. These are poor autonomous AI-tool actions without narrow permissions,
 deterministic inputs, preview/idempotency rules, auditability, and human approval.
 
-Ban CRUD is not recommended for `0.1.0`. The official request bodies, conflict semantics, exact
+Ban writes are not recommended for `0.1.0`. The official request bodies, conflict semantics, exact
 organization permissions, deletion meaning, and disposable cleanup strategy were not sufficiently
 verifiable in this pass.
 
 ## Future live-test requirements
 
-The owner must later provide a dedicated subscribed BattleMetrics account, a least-privilege disposable
+The owner must later provide a dedicated subscribed BattleMetrics account, a separate least-privilege
 token, a synthetic/non-production organization, a disposable server and player fixture where permitted,
-an empty disposable ban list, a synthetic ban that may be safely removed, and explicit approval for each
-write test. Private values must stay outside Git and normal CI.
+an owner-controlled empty disposable ban list, an existing synthetic ban for read verification, and
+explicit approval for each future write test. Private values must stay outside Git and normal CI. No ban
+may be created merely to unblock a read-only phase.
