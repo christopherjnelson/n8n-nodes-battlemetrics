@@ -16,7 +16,11 @@
 - [x] Fully qualified codex metadata and supported categories verified in source, build, and package
 - [x] Temporary package regression gate verifies metadata, package contents, and compiled exports
 - [x] Owner-provided Premium subscribed Server live test completed on 2026-08-04
-- [ ] Manual packed-package workflows verified in a disposable local n8n instance
+- [x] Exact packed-package workflows verified in a disposable localhost-only n8n 2.30.6 instance
+- [x] Importable synthetic Server Get and Get Many examples included and regression tested
+- [x] Bounded live Limit matrix covers one page, the observed page boundary, and one safe page follow
+- [x] Runtime `NodeApiError.httpCode` classification is regression tested
+- [x] Light/dark icons rendered in n8n and inspected at 16, 20, and 24 pixels
 - [ ] Explicit `0.1.0` operation set chosen; broader read matrix remains a roadmap
 - [ ] Repository and npm ownership established by the owner
 - [ ] Security private-reporting channel configured
@@ -26,8 +30,13 @@
 Do not publish `0.1.0` until each operation actually included in that release has a current first-party
 contract record, exact scope/permission mapping, mocked coverage, suitable safe live verification,
 documentation, and package-content review. The broader API-scope list is a roadmap, not a requirement to
-ship every read in `0.1.0`. Confirm n8n compatibility on supported Node/n8n versions and manually inspect
-both icon variants in light/dark themes at 16, 20, and 24 pixels.
+ship every read in `0.1.0`. Broader supported-version compatibility remains separate from the recorded
+Node.js 24.18.0 and n8n 2.30.6 packed-package check.
+
+The Server resource itself may be frozen after Phase 1C validation, but the package must not be called
+release-ready while the unchecked ownership, private-reporting, documentation-contract, and compatibility
+gates above remain open. Live Return All is intentionally not an unbounded publication gate; a bounded
+two-page live Limit run plus controlled pagination tests provide the safety evidence.
 
 This repository intentionally contains no publishing workflow, npm token, release secret, or functional
 release script.

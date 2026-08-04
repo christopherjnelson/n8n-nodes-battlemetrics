@@ -15,6 +15,9 @@ All notable changes to this project will be documented here.
 - Synthetic mocked test suite, original icon composition, documentation, and non-publishing CI.
 - Offline regressions for sanitized live-verifier summaries and packed codex metadata.
 - Sanitized synthetic fixtures matching the subscribed Server Get and Get Many structures.
+- Importable synthetic Server Get and Get Many example workflows.
+- Packed-artifact regressions for the allowlist, examples, metadata equality, exports, loadability,
+  credential UX, runtime dependency count, sizes, and SHA-256.
 
 ### Changed
 
@@ -27,3 +30,7 @@ All notable changes to this project will be documented here.
 - Verified Premium subscribed Server reads, absolute keyset pagination, invalid credentials, and missing
   resources against the live API without retaining response values.
 - Renamed the `404` error category to `resourceNotFound` to match the verified contract.
+- Clarified Server IDs, raw envelopes, default collection ordering, the absence of server-side filters,
+  local Limit behavior, Return All caps, and subscription requirements in the node UI.
+- Recognized n8n `NodeApiError.httpCode` strings so runtime 401/403/404/429/5xx failures retain their
+  safe category and status.

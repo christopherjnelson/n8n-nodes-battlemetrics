@@ -26,10 +26,18 @@ and `404 resourceNotFound`. Successful responses used `application/json` with JS
 `included`, and collection `links`; no raw body or live value was retained. Repeat only when a release
 change affects transport, validation, pagination, output, or error normalization.
 
-No repository-established interactive n8n test environment was available during that run. Package
-regression verified that the compiled node and credential load from the packed artifact, but credential
-selection, browser execution data, and manual Server Get/Get Many workflows remain release-hardening
-checks in a disposable local n8n instance.
+Phase 1C subsequently installed one exact tarball into a disposable n8n profile and exercised the real
+n8n 2.30.6 editor on localhost with Node.js 24.18.0. The browser discovered BattleMetrics, displayed its
+two actions, showed a password-protected BattleMetrics API credential without a test button, and ran
+Server Get plus bounded Get Many limits 1, 5, 10, and 11. The observed collection page contained 10
+primary resources, so Limit 11 followed exactly one safe next link. Stored execution checks confirmed
+string IDs, raw envelope preservation, ordering, local trimming, page context, pairing, and absence of
+credential or Authorization data. A disposable two-input workflow also confirmed stable success/error
+ordering and continue-on-fail behavior.
+
+Do not run live Return All merely to prove pagination: the collection can be large. The live Limit 11
+check is the bounded two-page proof; Return All termination, caps, ordering, included deduplication, and
+unsafe-link handling remain covered with controlled mocked responses.
 
 Before filtered collection reads, verify every query field in current first-party documentation and use
 synthetic search criteria and small limits. Before any moderation test,

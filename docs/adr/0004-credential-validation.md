@@ -51,3 +51,11 @@ The bounded subscribed verifier passed on 2026-08-04. It observed `200` for Serv
 Get Many pages, `401 invalidCredential` for the synthetic token, and `404 resourceNotFound` for the
 synthetic in-range missing ID. All responses used `application/json` error/success media types with
 JSON:API-shaped envelopes.
+
+## Phase 1C runtime review
+
+The exact packed node was exercised through a disposable n8n 2.30.6 editor. The credential dialog kept
+Access Token password-protected and exposed no standalone test button. Execution data and browser logs
+contained neither the token nor Authorization text. The run also demonstrated that n8n represents helper
+HTTP failures with a string `NodeApiError.httpCode`; the normalizer now accepts validated three-digit HTTP
+strings so runtime 401, 403, 404, 429, and server errors retain their status and safe category.

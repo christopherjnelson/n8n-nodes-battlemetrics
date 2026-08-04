@@ -40,3 +40,11 @@ The subscribed run later that day directly observed absolute same-origin `/serve
 duplicate primary IDs across the adjacent pages. These keys remain opaque link state and are not exposed
 as user parameters. Page size, offsets, filters, sorting, includes, and sparse fieldsets remain
 unresolved, so the decision remains conservative.
+
+## Phase 1C usability review
+
+The editor description now states that Get Many uses the API's default collection ordering and exposes no
+server-side filters. Return All explicitly names the 100-page and 10,000-item caps; Limit explicitly says
+that trimming is local and cannot over-return. A bounded n8n run observed 10 resources on the first page:
+limits 1, 5, and 10 fetched one page, while Limit 11 fetched exactly two pages and returned exactly 11
+primary resources with both page contexts retained.

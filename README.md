@@ -9,14 +9,15 @@ moderation records can contain sensitive data.
 
 ## Current scope
 
-Phase 1A implements two read-only operations:
+The current package implements exactly two read-only operations:
 
 - **Server → Get**: `GET https://api.battlemetrics.com/servers/{serverId}`
 - **Server → Get Many**: `GET https://api.battlemetrics.com/servers`
 
 It also includes typed transport, input validation, JSON:API validation and preservation, bounded
 same-origin pagination, safe error normalization, an opt-in read-only live verifier, and mocked tests.
-Get Many exposes only **Return All** and a local **Limit**. Search, game, country/region, status, sort,
+Get Many uses the API's default server collection ordering and exposes only **Return All** and a local
+**Limit**. Search, game, country/region, status, sort,
 include, and page-size parameters remain deferred because their current first-party contracts could not
 be retrieved. There is no trigger node, websocket support, arbitrary request operation, moderation
 write, or user-configurable API host.
@@ -30,10 +31,11 @@ See [the API inventory](docs/research/api-inventory.md) and [the API scope ADR](
 
 ## Local development
 
-Requirements actually tested in this foundation pass:
+Requirements used for the current release-hardening pass:
 
 - Node.js 24.18.0
 - pnpm 11.15.0
+- n8n 2.30.6 for the isolated packed-package editor test
 
 ```sh
 pnpm install --frozen-lockfile
@@ -73,11 +75,15 @@ subscription-required response (`403`). On 2026-08-04, a subscribed owner token 
 Server Get and Server Get Many with `200` responses. A subscription response is never presented as
 successful credential validation.
 
+No optional personal-access-token permissions were selected or required for the subscribed Server Get
+and Get Many checks. That observation applies only to these two tested Server reads; other resources,
+organization roles, and future operations require separate verification.
+
 ### Permission status
 
 | Operation group          | Token required by this node | Exact BattleMetrics permission/scope                               |
 | ------------------------ | --------------------------- | ------------------------------------------------------------------ |
-| Server Get/Get Many      | Yes                         | Unresolved in accessible official documentation                    |
+| Server Get/Get Many      | Yes                         | No optional token permission required in the subscribed test       |
 | Proposed read operations | Yes                         | Unresolved per endpoint; must be verified before implementation    |
 | Moderation writes        | Not implemented             | Unresolved; organization role/resource permission is also expected |
 
@@ -116,6 +122,18 @@ did not expose REST quota, remaining, reset, or `Retry-After` headers. They did 
 private cache control, and a cache-bypass status. The documented outbound-webhook limits are a different
 system and are not used as REST limits here.
 
+## Example workflows
+
+Sanitized importable workflows are in [`examples/`](examples/README.md):
+
+- [`get-server.json`](examples/get-server.json) uses Manual Trigger and Server → Get with a synthetic
+  placeholder ID.
+- [`get-servers.json`](examples/get-servers.json) uses Manual Trigger and Server → Get Many with Return
+  All disabled and Limit 10.
+
+The examples contain no credential ID, token, execution output, or real server data. After import,
+create or select a BattleMetrics API credential and replace the synthetic Server ID where applicable.
+
 ## Opt-in live verification
 
 Normal tests and CI never contact BattleMetrics. The local verifier requires non-empty
@@ -144,8 +162,9 @@ BattleMetrics player identifiers, IP-derived data, notes, flags, activity, and b
 personal, private, or moderation-sensitive. Minimize collection, restrict workflow access, choose the
 least privilege token, and apply your retention and disclosure obligations.
 
-Never include access tokens, organization details, private player identifiers, private moderation data,
-notes, ban reasons, flags, or unredacted API responses in issues. Use synthetic examples.
+Never include access tokens, private execution data, organization details, private player identifiers,
+private moderation data, notes, ban reasons, flags, or unredacted API responses in issues. Use synthetic
+examples.
 
 The node sets `usableAsTool: true`. All current actions are read-only, use only the Server resource, and
 use a fixed origin. If destructive operations are added later, workflows using AI agents must place
