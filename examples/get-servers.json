@@ -1,0 +1,55 @@
+{
+	"id": "phase1cGetServers",
+	"name": "Get BattleMetrics servers",
+	"nodes": [
+		{
+			"parameters": {},
+			"id": "2e83f572-35ed-4b5e-b64d-111111111111",
+			"name": "Manual Trigger",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [0, 0]
+		},
+		{
+			"parameters": {
+				"resource": "server",
+				"operation": "getAll",
+				"returnAll": false,
+				"limit": 10
+			},
+			"id": "2e83f572-35ed-4b5e-b64d-222222222222",
+			"name": "Get many servers",
+			"type": "n8n-nodes-battlemetrics.battleMetrics",
+			"typeVersion": 1,
+			"position": [260, 0]
+		},
+		{
+			"parameters": {
+				"content": "## Before running\nCreate and select a **BattleMetrics API** credential. This example keeps **Return All** off and uses a conservative local Limit. Results use BattleMetrics' default server collection ordering."
+			},
+			"id": "2e83f572-35ed-4b5e-b64d-333333333333",
+			"name": "Setup notes",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-20, -260]
+		}
+	],
+	"connections": {
+		"Manual Trigger": {
+			"main": [
+				[
+					{
+						"node": "Get many servers",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"pinData": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	}
+}

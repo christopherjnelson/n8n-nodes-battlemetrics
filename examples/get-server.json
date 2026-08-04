@@ -1,0 +1,54 @@
+{
+	"id": "phase1cGetServer",
+	"name": "Get a BattleMetrics server",
+	"nodes": [
+		{
+			"parameters": {},
+			"id": "1e83f572-35ed-4b5e-b64d-111111111111",
+			"name": "Manual Trigger",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [0, 0]
+		},
+		{
+			"parameters": {
+				"resource": "server",
+				"operation": "get",
+				"serverId": "000000000000000000"
+			},
+			"id": "1e83f572-35ed-4b5e-b64d-222222222222",
+			"name": "Get a server",
+			"type": "n8n-nodes-battlemetrics.battleMetrics",
+			"typeVersion": 1,
+			"position": [260, 0]
+		},
+		{
+			"parameters": {
+				"content": "## Before running\nCreate a **BattleMetrics API** credential with your personal access token, select it on **Get a server**, and replace the synthetic Server ID. Never share the token or private execution data."
+			},
+			"id": "1e83f572-35ed-4b5e-b64d-333333333333",
+			"name": "Setup notes",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-20, -260]
+		}
+	],
+	"connections": {
+		"Manual Trigger": {
+			"main": [
+				[
+					{
+						"node": "Get a server",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"pinData": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	}
+}
