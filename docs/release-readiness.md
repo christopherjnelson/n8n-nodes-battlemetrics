@@ -4,7 +4,7 @@
 
 - [x] Official current n8n CLI scaffold inspected
 - [x] Fixed API origin and required credential
-- [x] Server has two read-only operations; Game has only Get Many
+- [x] Server has two read-only operations; Game has only Get Many; Player has only Get
 - [x] Typed validation, JSON:API, pagination, output, transport, and safe errors
 - [x] Synthetic tests; no BattleMetrics calls in tests or CI
 - [x] Original light/dark icon composition with MIT attribution
@@ -17,11 +17,15 @@
 - [x] Temporary package regression gate verifies metadata, package contents, and compiled exports
 - [x] Owner-provided Premium subscribed Server live test completed on 2026-08-04
 - [x] Bounded Premium subscribed Game Get Many live test completed on 2026-08-04
+- [x] Owner-approved Premium subscribed Player Get and synthetic missing-player tests completed on 2026-08-04
 - [x] Exact packed-package workflows verified in a disposable localhost-only n8n 2.30.6 instance
 - [x] Exact Phase 1D tarball verified for Game UI, credential selection, Limit 5/11 execution, and example import
+- [x] Exact Phase 1E tarball verified for Player UI, credential safety, live Get, two-input pairing, Continue On Fail, and example import
 - [x] n8n proxy authentication disabled so no unverified Custom API Call is injected
 - [x] Importable synthetic Server Get and Get Many examples included and regression tested
 - [x] Importable synthetic Game Get Many example included and regression tested
+- [x] Importable synthetic Player Get example included and regression tested
+- [x] Player diagnostics retain only structural key names and never enumerate or emit identity values
 - [x] Bounded live Limit matrix covers one page, the observed page boundary, and one safe page follow
 - [x] Runtime `NodeApiError.httpCode` classification is regression tested
 - [x] Light/dark icons rendered in n8n and inspected at 16, 20, and 24 pixels

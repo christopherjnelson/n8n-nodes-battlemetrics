@@ -7,8 +7,8 @@
 
 1. Server: Get
 2. Server: Get Many (search/filter controls deferred pending first-party verification)
-3. Player: Get
-4. Player: Get Many/Search
+3. Player: Get — implemented after subscribed get-by-ID verification
+4. Player: Get Many/Search — deferred; collection constraints and privacy contract unresolved
 5. Game: Get Many (implemented without unverified query parameters)
 6. Organization: Get
 7. Organization: Get Many
@@ -18,7 +18,9 @@
 11. Ban: Get Many
 
 This is Candidate A, read-first. Game Get Many was promoted after bounded subscribed verification of
-`GET /games`; no other Game operation was added. Each deferred operation remains contingent on
+`GET /games`; no other Game operation was added. Player Get was promoted after owner-approved bounded
+verification of `GET /players/{playerId}` and synthetic missing-player behavior. Player search and
+collection access remain deferred to prevent broad enumeration or private-identifier search. Each deferred operation remains contingent on
 verification of the current official method, path, filters, sorting, includes, pagination, media type,
 exact token scope, organization permission, and response schema. Proposed scope is not an implementation
 claim.

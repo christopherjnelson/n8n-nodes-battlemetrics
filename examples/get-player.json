@@ -1,0 +1,54 @@
+{
+	"id": "phase1eGetPlayer",
+	"name": "Get a BattleMetrics player",
+	"nodes": [
+		{
+			"parameters": {},
+			"id": "1e83f572-35ed-4b5e-b64d-444444444441",
+			"name": "Manual Trigger",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [0, 0]
+		},
+		{
+			"parameters": {
+				"resource": "player",
+				"operation": "get",
+				"playerId": "12345678901234567890"
+			},
+			"id": "1e83f572-35ed-4b5e-b64d-444444444442",
+			"name": "Get a player",
+			"type": "n8n-nodes-battlemetrics.battleMetrics",
+			"typeVersion": 1,
+			"position": [260, 0]
+		},
+		{
+			"parameters": {
+				"content": "## Before running\nCreate a **BattleMetrics API** credential with your personal access token, select it on **Get a player**, and replace the synthetic BattleMetrics Player ID. Do not use a display name, Steam ID, or other platform identifier. Minimize retention and never share the token or private player execution data."
+			},
+			"id": "1e83f572-35ed-4b5e-b64d-444444444443",
+			"name": "Setup notes",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-20, -260]
+		}
+	],
+	"connections": {
+		"Manual Trigger": {
+			"main": [
+				[
+					{
+						"node": "Get a player",
+						"type": "main",
+						"index": 0
+					}
+				]
+			]
+		}
+	},
+	"pinData": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	}
+}
