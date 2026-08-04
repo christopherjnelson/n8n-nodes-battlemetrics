@@ -66,7 +66,7 @@ export class BattleMetrics implements INodeType {
 						value: 'getAll',
 						action: 'Get many servers',
 						description:
-							"Get the raw server collection in the API's default ordering, with no server-side filters. API access may require an eligible subscription.",
+							"Get the raw server collection in the API's default ordering, with no server-side filters. Limit trims locally; Return All follows pagination with 100-page and 10,000-item caps. API access may require an eligible subscription.",
 					},
 				],
 				default: 'get',
@@ -76,8 +76,7 @@ export class BattleMetrics implements INodeType {
 				name: 'returnAll',
 				type: 'boolean',
 				default: false,
-				description:
-					'Whether to follow BattleMetrics pagination until it ends, subject to the 100-page and 10,000-item safety caps',
+				description: 'Whether to return all results or only up to a given limit',
 				displayOptions: { show: { resource: ['server'], operation: ['getAll'] } },
 			},
 			{
@@ -86,8 +85,7 @@ export class BattleMetrics implements INodeType {
 				type: 'number',
 				typeOptions: { minValue: 1, maxValue: DEFAULT_MAX_ITEMS },
 				default: 50,
-				description:
-					'Maximum number of primary server resources to return. The node trims results locally and never returns more than this limit.',
+				description: 'Max number of results to return',
 				displayOptions: {
 					show: { resource: ['server'], operation: ['getAll'], returnAll: [false] },
 				},

@@ -104,13 +104,17 @@ describe('package and node metadata', () => {
 		expect(get?.description).toContain('eligible subscription');
 		expect(getMany?.description).toContain("API's default ordering");
 		expect(getMany?.description).toContain('no server-side filters');
+		expect(getMany?.description).toContain('Limit trims locally');
+		expect(getMany?.description).toContain('100-page and 10,000-item caps');
 		expect(getMany?.description).toContain('eligible subscription');
 		expect(property('serverId')).toMatchObject({ required: true, default: '' });
 		expect(property('serverId')?.description).toContain(
 			'not a server name, address, Steam ID, or game ID',
 		);
-		expect(property('returnAll')?.description).toContain('100-page and 10,000-item safety caps');
-		expect(property('limit')?.description).toContain('trims results locally');
+		expect(property('returnAll')?.description).toBe(
+			'Whether to return all results or only up to a given limit',
+		);
+		expect(property('limit')?.description).toBe('Max number of results to return');
 	});
 
 	it('has correct package metadata and exports', () => {
