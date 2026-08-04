@@ -13,6 +13,7 @@ const temporaryDirectory = mkdtempSync(join(tmpdir(), 'battlemetrics-package-reg
 const extractionDirectory = mkdtempSync(join(repository, '.package-regression-'));
 const require = createRequire(import.meta.url);
 const expectedCodexNode = 'n8n-nodes-battlemetrics.battleMetrics';
+const expectedTriggerCodexNode = 'n8n-nodes-battlemetrics.battleMetricsTrigger';
 const expectedCategories = ['Data & Storage', 'Development'];
 const expectedFilesAllowlist = [
 	'dist',
@@ -56,9 +57,19 @@ try {
 	const compiledMetadata = jsonFile(
 		join(repository, 'dist/nodes/BattleMetrics/BattleMetrics.node.json'),
 	);
+	const sourceTriggerMetadata = jsonFile(
+		join(repository, 'nodes/BattleMetrics/BattleMetricsTrigger.node.json'),
+	);
+	const compiledTriggerMetadata = jsonFile(
+		join(repository, 'dist/nodes/BattleMetrics/BattleMetricsTrigger.node.json'),
+	);
 	assert(
 		JSON.stringify(sourceMetadata) === JSON.stringify(compiledMetadata),
 		'Source and compiled codex metadata differ',
+	);
+	assert(
+		JSON.stringify(sourceTriggerMetadata) === JSON.stringify(compiledTriggerMetadata),
+		'Source and compiled trigger codex metadata differ',
 	);
 
 	execFileSync('pnpm', ['pack', '--pack-destination', temporaryDirectory], {
@@ -82,12 +93,33 @@ try {
 	const packedPackage = JSON.parse(
 		commandOutput('tar', ['-xOf', tarballPath, 'package/package.json']),
 	);
+	const packedTriggerMetadata = JSON.parse(
+		commandOutput('tar', [
+			'-xOf',
+			tarballPath,
+			'package/dist/nodes/BattleMetrics/BattleMetricsTrigger.node.json',
+		]),
+	);
 	assert(packedMetadata.node === expectedCodexNode, 'Packed codex node is not fully qualified');
 	assert(
 		JSON.stringify(packedMetadata.categories) === JSON.stringify(expectedCategories),
 		'Packed codex categories are not the supported expected values',
 	);
 	assert(packedMetadata.nodeVersion === '1.0', 'Packed codex node version is not 1.0');
+	assert(
+		packedTriggerMetadata.node === expectedTriggerCodexNode,
+		'Packed trigger codex node is not fully qualified',
+	);
+	assert(
+		JSON.stringify(packedTriggerMetadata.categories) ===
+			JSON.stringify(['Core Nodes', 'Development']),
+		'Packed trigger codex categories are not the supported expected values',
+	);
+	assert(packedTriggerMetadata.nodeVersion === '1.0', 'Packed trigger node version is not 1.0');
+	assert(
+		JSON.stringify(sourceTriggerMetadata) === JSON.stringify(packedTriggerMetadata),
+		'Source and packed trigger codex metadata differ',
+	);
 	assert(
 		JSON.stringify(sourceMetadata) === JSON.stringify(packedMetadata),
 		'Source and packed codex metadata differ',
@@ -98,11 +130,19 @@ try {
 	);
 	assert(!('dependencies' in packedPackage), 'Packed package declares runtime dependencies');
 	assert(
-		packedPackage.n8n?.nodes?.[0] === 'dist/nodes/BattleMetrics/BattleMetrics.node.js',
+		JSON.stringify(packedPackage.n8n?.nodes) ===
+			JSON.stringify([
+				'dist/nodes/BattleMetrics/BattleMetrics.node.js',
+				'dist/nodes/BattleMetrics/BattleMetricsTrigger.node.js',
+			]),
 		'Packed node export is incorrect',
 	);
 	assert(
-		packedPackage.n8n?.credentials?.[0] === 'dist/credentials/BattleMetricsApi.credentials.js',
+		JSON.stringify(packedPackage.n8n?.credentials) ===
+			JSON.stringify([
+				'dist/credentials/BattleMetricsApi.credentials.js',
+				'dist/credentials/BattleMetricsWebhook.credentials.js',
+			]),
 		'Packed credential export is incorrect',
 	);
 	assert(
@@ -138,19 +178,64 @@ try {
 	const credentialModule = require(
 		join(extractedPackage, 'dist/credentials/BattleMetricsApi.credentials.js'),
 	);
+	const triggerModule = require(
+		join(extractedPackage, 'dist/nodes/BattleMetrics/BattleMetricsTrigger.node.js'),
+	);
+	const webhookCredentialModule = require(
+		join(extractedPackage, 'dist/credentials/BattleMetricsWebhook.credentials.js'),
+	);
 	assert(typeof nodeModule.BattleMetrics === 'function', 'Compiled node export does not load');
 	assert(
 		typeof credentialModule.BattleMetricsApi === 'function',
 		'Compiled credential export does not load',
 	);
+	assert(
+		typeof triggerModule.BattleMetricsTrigger === 'function',
+		'Compiled trigger export does not load',
+	);
+	assert(
+		typeof webhookCredentialModule.BattleMetricsWebhook === 'function',
+		'Compiled webhook credential export does not load',
+	);
 	const node = new nodeModule.BattleMetrics();
 	const credential = new credentialModule.BattleMetricsApi();
+	const trigger = new triggerModule.BattleMetricsTrigger();
+	const webhookCredential = new webhookCredentialModule.BattleMetricsWebhook();
 	assert(node.description.version === 1, 'Packed node type version is not 1');
 	assert(node.description.usableAsTool === true, 'Packed node is not usable as an AI tool');
+	assert(trigger.description.version === 1, 'Packed trigger node type version is not 1');
+	assert(trigger.description.usableAsTool === undefined, 'Packed trigger is exposed as an AI tool');
+	assert(
+		trigger.description.credentials?.[0]?.name === 'battleMetricsWebhook',
+		'Packed trigger credential is incorrect',
+	);
+	assert(
+		trigger.description.webhooks?.[0]?.httpMethod === 'POST' &&
+			trigger.description.webhooks?.[0]?.responseMode === 'onReceived',
+		'Packed trigger webhook is not immediate POST',
+	);
 	assert(credential.name === 'battleMetricsApi', 'Packed credential name is incorrect');
 	assert(
 		credential.displayName === 'BattleMetrics API',
 		'Packed credential display name is incorrect',
+	);
+	assert(
+		webhookCredential.name === 'battleMetricsWebhook' &&
+			webhookCredential.displayName === 'BattleMetrics Webhook',
+		'Packed webhook credential identity is incorrect',
+	);
+	assert(
+		webhookCredential.authenticate === undefined,
+		'Packed webhook credential enables proxy authentication',
+	);
+	assert(
+		webhookCredential.properties?.some(
+			(property) =>
+				property.name === 'sharedSecret' &&
+				property.required === true &&
+				property.typeOptions?.password === true,
+		),
+		'Packed webhook credential Shared Secret is not required and password-protected',
 	);
 	assert(
 		credential.authenticate === undefined,
@@ -198,14 +283,22 @@ try {
 		.sort();
 	assert(
 		JSON.stringify(exampleFiles) ===
-			JSON.stringify(['get-games.json', 'get-player.json', 'get-server.json', 'get-servers.json']),
+			JSON.stringify([
+				'get-games.json',
+				'get-player.json',
+				'get-server.json',
+				'get-servers.json',
+				'receive-battlemetrics-webhook.json',
+			]),
 		'Packed examples are missing or unexpected',
 	);
 	for (const name of exampleFiles) {
 		const workflow = jsonFile(join(extractedPackage, 'examples', name));
 		const serialized = JSON.stringify(workflow);
 		assert(
-			workflow.nodes?.some((candidate) => candidate.type === expectedCodexNode),
+			workflow.nodes?.some((candidate) =>
+				[expectedCodexNode, expectedTriggerCodexNode].includes(candidate.type),
+			),
 			`${name} does not reference the package node type`,
 		);
 		assert(
@@ -213,7 +306,9 @@ try {
 			`${name} contains a credential reference`,
 		);
 		assert(
-			!/accessToken|Authorization|Bearer\s|executionData/i.test(serialized),
+			!/accessToken|sharedSecret|X-Signature|Authorization|Bearer\s|executionData/i.test(
+				serialized,
+			),
 			`${name} contains credential or execution data`,
 		);
 	}
@@ -234,9 +329,12 @@ try {
 			unpackedSize,
 			sha256,
 			codexNode: packedMetadata.node,
+			triggerCodexNode: packedTriggerMetadata.node,
 			codexCategories: packedMetadata.categories,
 			compiledNodeLoad: true,
 			compiledCredentialLoad: true,
+			compiledTriggerLoad: true,
+			compiledWebhookCredentialLoad: true,
 		}),
 	);
 } finally {

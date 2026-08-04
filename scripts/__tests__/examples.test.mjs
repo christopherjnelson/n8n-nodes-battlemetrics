@@ -18,24 +18,41 @@ describe('example workflows', () => {
 			'get-player.json',
 			'get-server.json',
 			'get-servers.json',
+			'receive-battlemetrics-webhook.json',
 		]);
 	});
 
 	it.each(workflows)('$name has an importable workflow structure', ({ workflow }) => {
 		expect(workflow).toMatchObject({
-			id: expect.stringMatching(/^phase1[cde]/),
+			id: expect.stringMatching(/^phase(?:1[cde]|2a)/),
 			active: false,
 			nodes: expect.any(Array),
 			connections: expect.any(Object),
 			settings: expect.any(Object),
 		});
-		expect(workflow.nodes.some((node) => node.type === 'n8n-nodes-base.manualTrigger')).toBe(true);
+		if (workflow.name.includes('signed BattleMetrics webhook')) {
+			expect(
+				workflow.nodes.some((node) => node.type === 'n8n-nodes-battlemetrics.battleMetricsTrigger'),
+			).toBe(true);
+		} else {
+			expect(workflow.nodes.some((node) => node.type === 'n8n-nodes-base.manualTrigger')).toBe(
+				true,
+			);
+		}
 		expect(workflow.nodes.some((node) => node.type === 'n8n-nodes-base.stickyNote')).toBe(true);
 	});
 
 	it.each(workflows)(
 		'$name references only the implemented BattleMetrics node operations',
 		({ name, workflow }) => {
+			if (name === 'receive-battlemetrics-webhook.json') {
+				expect(
+					workflow.nodes.filter(
+						(node) => node.type === 'n8n-nodes-battlemetrics.battleMetricsTrigger',
+					),
+				).toEqual([expect.objectContaining({ typeVersion: 1, parameters: {} })]);
+				return;
+			}
 			const nodes = workflow.nodes.filter(
 				(node) => node.type === 'n8n-nodes-battlemetrics.battleMetrics',
 			);
@@ -69,7 +86,9 @@ describe('example workflows', () => {
 		'$name contains no credentials, execution data, or private values',
 		({ workflow }) => {
 			const serialized = JSON.stringify(workflow);
-			expect(serialized).not.toMatch(/accessToken|Authorization|Bearer\s|executionData/i);
+			expect(serialized).not.toMatch(
+				/accessToken|sharedSecret|X-Signature|Authorization|Bearer\s|executionData/i,
+			);
 			expect(workflow).not.toHaveProperty('credentials');
 			for (const node of workflow.nodes) expect(node).not.toHaveProperty('credentials');
 		},

@@ -218,8 +218,14 @@ describe('package and node metadata', () => {
 		expect(packageJson.n8n).toEqual(
 			expect.objectContaining({
 				n8nNodesApiVersion: 1,
-				credentials: ['dist/credentials/BattleMetricsApi.credentials.js'],
-				nodes: ['dist/nodes/BattleMetrics/BattleMetrics.node.js'],
+				credentials: [
+					'dist/credentials/BattleMetricsApi.credentials.js',
+					'dist/credentials/BattleMetricsWebhook.credentials.js',
+				],
+				nodes: [
+					'dist/nodes/BattleMetrics/BattleMetrics.node.js',
+					'dist/nodes/BattleMetrics/BattleMetricsTrigger.node.js',
+				],
 			}),
 		);
 	});
