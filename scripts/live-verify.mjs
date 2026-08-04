@@ -5,14 +5,17 @@ import { pathToFileURL } from 'node:url';
 const API_ORIGIN = 'https://api.battlemetrics.com';
 const SERVERS_URL = `${API_ORIGIN}/servers`;
 const GAMES_URL = `${API_ORIGIN}/games`;
+const PLAYERS_URL = `${API_ORIGIN}/players`;
 const JSON_API_MEDIA_TYPE = 'application/vnd.api+json';
 const TIMEOUT_MS = 15_000;
 const SYNTHETIC_INVALID_TOKEN = 'phase-1b-synthetic-invalid-token';
 const SYNTHETIC_MISSING_SERVER_ID = '0';
+const SYNTHETIC_MISSING_PLAYER_ID = '0';
 
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
 	const token = process.env.BATTLEMETRICS_ACCESS_TOKEN?.trim();
 	const serverId = process.env.BATTLEMETRICS_SERVER_ID?.trim();
+	const playerId = process.env.BATTLEMETRICS_PLAYER_ID?.trim();
 
 	if (!token) {
 		console.error('Refusing live verification: BATTLEMETRICS_ACCESS_TOKEN must be non-empty.');
@@ -23,7 +26,7 @@ if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) 
 		);
 		process.exitCode = 1;
 	} else {
-		await verify(token, serverId);
+		await verify(token, serverId, playerId);
 	}
 }
 
@@ -258,7 +261,7 @@ function publicResult(result, extra = {}) {
 	return { ...safe, ...extra };
 }
 
-async function verify(accessToken, configuredServerId) {
+async function verify(accessToken, configuredServerId, configuredPlayerId) {
 	const results = [];
 	if (configuredServerId) {
 		const get = await request(
@@ -324,6 +327,34 @@ async function verify(accessToken, configuredServerId) {
 			skipped: true,
 			reason: nextTarget.presence === 'present' ? 'page 1 failed' : 'no next link',
 		});
+	}
+
+	if (configuredPlayerId) {
+		const player = await request(
+			'Player Get',
+			`${PLAYERS_URL}/${encodeURIComponent(configuredPlayerId)}`,
+			accessToken,
+			'single',
+			'/players',
+		);
+		const playerIdMatches = player.document?.data?.id === configuredPlayerId;
+		player.passed = player.passed && player.document?.data?.type === 'player' && playerIdMatches;
+		results.push(publicResult(player, { requestedIdMatches: playerIdMatches }));
+
+		const missingPlayer = await request(
+			'Invalid player ID negative check',
+			`${PLAYERS_URL}/${SYNTHETIC_MISSING_PLAYER_ID}`,
+			accessToken,
+			undefined,
+			'/players',
+		);
+		missingPlayer.passed =
+			missingPlayer.status === 404 &&
+			missingPlayer.category === 'resourceNotFound' &&
+			missingPlayer.parseError === false &&
+			missingPlayer.envelope?.valid === true &&
+			missingPlayer.envelope?.kind === 'error';
+		results.push(publicResult(missingPlayer));
 	}
 
 	const games = await request(

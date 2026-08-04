@@ -6,7 +6,7 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { BattleMetricsRequestError, normalizeError } from './lib/errors';
-import { opaqueResourceId, type ServerId } from './lib/inputValidation';
+import { opaqueResourceId, type PlayerId, type ServerId } from './lib/inputValidation';
 import { requireCollection, requireSingleResource } from './lib/jsonApiValidation';
 import {
 	collectionOutput,
@@ -25,7 +25,7 @@ export class BattleMetrics implements INodeType {
 		icon: { light: 'file:battleMetrics.svg', dark: 'file:battleMetrics.dark.svg' },
 		group: ['input'],
 		version: 1,
-		description: 'Read raw server and game data from the BattleMetrics API (unofficial)',
+		description: 'Read raw server, game, and player data from the BattleMetrics API (unofficial)',
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		defaults: { name: 'BattleMetrics' },
 		inputs: [NodeConnectionTypes.Main],
@@ -50,12 +50,35 @@ export class BattleMetrics implements INodeType {
 						description: 'A game supported by the BattleMetrics server directory',
 					},
 					{
+						name: 'Player',
+						value: 'player',
+						description:
+							'A BattleMetrics player profile; returned data can contain personal information',
+					},
+					{
 						name: 'Server',
 						value: 'server',
 						description: 'A game server identified by its BattleMetrics server ID',
 					},
 				],
 				default: 'server',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['player'] } },
+				options: [
+					{
+						name: 'Get',
+						value: 'get',
+						action: 'Get a player',
+						description:
+							'Get one raw player envelope by its BattleMetrics Player ID. This does not search by display name or platform identifier. API access may require an eligible subscription; minimize retention and forwarding because returned profiles can contain personal information.',
+					},
+				],
+				default: 'get',
 			},
 			{
 				displayName: 'Operation',
@@ -118,6 +141,16 @@ export class BattleMetrics implements INodeType {
 				},
 			},
 			{
+				displayName: 'Player ID',
+				name: 'playerId',
+				type: 'string',
+				required: true,
+				default: '',
+				description:
+					'Opaque BattleMetrics Player ID, not a player display name, Steam ID, other platform identifier, or server ID. It remains a string.',
+				displayOptions: { show: { resource: ['player'], operation: ['get'] } },
+			},
+			{
 				displayName: 'Server ID',
 				name: 'serverId',
 				type: 'string',
@@ -137,10 +170,27 @@ export class BattleMetrics implements INodeType {
 		for (let itemIndex = 0; itemIndex < inputs.length; itemIndex++) {
 			const resource = this.getNodeParameter('resource', itemIndex) as string;
 			const selectedOperation = this.getNodeParameter('operation', itemIndex);
-			const resourceLabel = resource === 'game' ? 'Game' : 'Server';
+			const resourceLabel =
+				resource === 'game' ? 'Game' : resource === 'player' ? 'Player' : 'Server';
 			const operation =
 				selectedOperation === 'getAll' ? `${resourceLabel}: Get Many` : `${resourceLabel}: Get`;
 			try {
+				if (resource === 'player' && selectedOperation === 'get') {
+					const playerId = opaqueResourceId<'player'>(
+						this.getNodeParameter('playerId', itemIndex),
+						'Player ID',
+					) as PlayerId;
+					const document = await battleMetricsApiRequest.call(this, {
+						method: 'GET',
+						pathSegments: ['players', playerId],
+						itemIndex,
+						operation,
+					});
+					requireSingleResource(document, 'player');
+					outputs.push(rawEnvelopeOutput(document, itemIndex));
+					continue;
+				}
+
 				if (resource === 'server' && selectedOperation === 'get') {
 					const serverId = opaqueResourceId<'server'>(
 						this.getNodeParameter('serverId', itemIndex),
