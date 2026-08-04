@@ -23,8 +23,13 @@ Get Many uses each API collection's default ordering and exposes only **Return A
 remain deferred because their current first-party contracts could not be retrieved. Player collection
 access/search is specifically deferred: its required constraint, permitted search fields, privacy
 boundary, and pagination contract are unresolved, so the node never enumerates players. There is no Game
-Get-by-ID, trigger node, websocket support, arbitrary request operation, moderation
+Get-by-ID, websocket support, arbitrary request operation, moderation
 write, or user-configurable API host.
+
+The package also includes a separate **BattleMetrics Trigger** for manually configured BattleMetrics
+outbound webhooks. It accepts the documented JSON and plain-text media types, verifies `X-Signature`
+against the exact raw request bytes, responds immediately after authentication, and emits a small safe
+wrapper. It does not register a webhook through the REST API or change a BattleMetrics trigger.
 
 The broader read list—Player Get Many/Search, Organization Get/Get Many, Ban List Get/Get
 Many, and Ban Get/Get Many—is a proposed roadmap, not a `0.1.0` promise. Every resource remains deferred
@@ -92,6 +97,35 @@ successful credential validation.
 No optional personal-access-token permissions were selected or required for the subscribed Server,
 Game, and Player checks. This is a direct observation for the tested token, not a universal scope or plan claim; other resources,
 organization roles, and future operations require separate verification.
+
+### BattleMetrics Trigger
+
+The trigger uses a separate **BattleMetrics Webhook** credential with one password-protected **Shared
+Secret** field. Use the same high-entropy value in BattleMetrics and n8n. It is not the BattleMetrics REST
+access token and must not be put in the webhook URL or body. The credential has no test button, HTTP
+authentication injection, proxy authentication, or generic Custom API Call.
+
+Add the trigger, create/select its credential, then copy n8n's Test URL while listening or its Production
+URL after activation. In BattleMetrics, manually create a personal trigger—or an organization trigger
+with **Use Trigger Webhooks**—and add a Webhook action with that URL, the same secret, a supported content
+type, and a body template. BattleMetrics does not expose the existing secret again, but allows a new one
+to be configured. It does not follow redirects and requires a publicly reachable URL.
+
+See the complete [manual setup and safe templates](docs/battlemetrics-webhook-setup.md). The current
+first-party [webhook contract](https://learn.battlemetrics.com/article/47-webhooks) was reviewed on
+2026-08-04.
+
+The parser requires exactly one `t` and one `s` component, validates the ISO-8601 timestamp, accepts a
+64-character hexadecimal SHA-256 digest in either case, rejects unknown or duplicate components, and
+computes HMAC-SHA256 incrementally over timestamp UTF-8 bytes, a period, and the exact body `Buffer`.
+Comparison uses equal-length buffers and `timingSafeEqual`. Authentication happens before content-type
+validation and parsing. No parsed-body verification fallback exists.
+
+No timestamp maximum age or in-memory replay cache is applied because BattleMetrics does not document
+retry timestamp semantics and such a cache would not be durable across n8n workers. The signed timestamp
+and optional `X-Request-ID` are emitted for downstream use. Duplicate delivery remains possible; use
+durable deduplication before non-idempotent effects. `X-Request-ID` and User-Agent are never treated as
+authentication.
 
 ### Permission status
 
@@ -163,9 +197,11 @@ Sanitized importable workflows are in [`examples/`](examples/README.md):
   All disabled and Limit 10.
 - [`get-games.json`](examples/get-games.json) uses Manual Trigger and Game → Get Many with Return All
   disabled and Limit 10.
+- [`receive-battlemetrics-webhook.json`](examples/receive-battlemetrics-webhook.json) uses the signed
+  BattleMetrics Trigger with manual setup notes and no credential reference or payload.
 
-The examples contain no credential ID, token, execution output, or real server or player data. After import,
-create or select a BattleMetrics API credential and replace the synthetic Server ID where applicable.
+The examples contain no credential ID, token, execution output, or real server or player data. After
+import, create or select the credential named by the example and replace synthetic IDs where applicable.
 
 ## Opt-in live verification
 
@@ -219,8 +255,9 @@ Never include access tokens, private execution data, organization details, priva
 private moderation data, notes, ban reasons, flags, or unredacted API responses in issues. Use synthetic
 examples.
 
-The node sets `usableAsTool: true`. All current actions are read-only, use only Server, Game, or exact
-BattleMetrics Player IDs, and use a fixed origin. If destructive operations are added later, workflows using AI agents must place
+The action node sets `usableAsTool: true`; the trigger is not an AI tool. All current actions are
+read-only, use only Server, Game, or exact BattleMetrics Player IDs, and use a fixed origin. If
+destructive operations are added later, workflows using AI agents must place
 them behind explicit human approval and narrow credentials; ambiguous autonomous moderation is unsafe.
 
 ## Project guidance

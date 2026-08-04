@@ -327,6 +327,7 @@ JSON:API path would turn a research gap into an undocumented endpoint.
 | Triggers           | Read/write                        | **Unresolved**                      | Trigger types include player join/update/leave and server update, plus game-specific types                        | Defer all. Need paths, schemas, actions, organization/personal ownership, scope, evaluation behavior               |
 | Outbound webhooks  | Configure through trigger actions | **No standalone endpoint verified** | First-party help says webhook is an action added to a trigger; organization usage requires “Use Trigger Webhooks” | No webhook node or API write. Need official API representation, signatures, secrets, URLs, and mutation contract   |
 | Websocket stream   | Subscribe                         | Not a REST endpoint                 | First-party help explicitly says websocket documentation is not available and points to a Discord example         | Prohibited/deferred; do not reverse engineer                                                                       |
+| Outbound webhook   | Receive signed POST               | User-configured n8n webhook URL     | First-party Webhooks help reviewed 2026-08-04; HMAC-SHA256 signs timestamp, period, and exact body                | Phase 2A implemented as manual receiver; no registration API claimed or called                                     |
 
 ## Ban write candidates (not recommended for `0.1.0`)
 

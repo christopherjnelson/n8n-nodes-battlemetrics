@@ -36,8 +36,10 @@ scope and organization-permission names, and owner-controlled targets are availa
 
 ## Deferred
 
-Ban create/update/delete, player-identifier reads, notes, flags, activity/audit, triggers, outbound
-webhooks, websocket behavior, and a trigger node are deferred. Ban writes and player notes can expose
+Ban create/update/delete, player-identifier reads, notes, flags, activity/audit, automatic webhook
+registration, polling triggers, and websocket behavior are deferred. Phase 2A separately implements a
+manual outbound-webhook receiver under [ADR 0006](0006-signed-webhook-trigger.md); it adds no REST
+resource or BattleMetrics-side lifecycle call. Ban writes and player notes can expose
 reasons, evidence, internal comments, and personal identifiers. Flags and audit logs reveal moderation
 decisions and staff activity. These are poor autonomous AI-tool actions without narrow permissions,
 deterministic inputs, preview/idempotency rules, auditability, and human approval.

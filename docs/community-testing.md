@@ -77,6 +77,23 @@ sanitizers; no raw response or execution output was written. Sanitizers reported
 Authorization, or Bearer text. The credential, database, workflows, cookies, logs, npm cache, profile,
 and exact tarball were removed.
 
+## Signed webhook trigger
+
+Phase 2A adds offline known-answer, exact-byte mutation, media-type, output-redaction, and webhook
+boundary coverage. On 2026-08-04, the exact packed artifact was installed in a fresh localhost-only n8n
+2.30.6 profile. Its generic receiver example imported, the Test URL accepted signed JSON, and the active
+Production URL accepted signed JSON, Unicode text, and an empty text body. Production requests with an
+invalid signature, no signature, an unsupported media type, malformed signed JSON, and a whitespace
+mutation of a previously signed body returned the intended 401, 415, or 400 without starting executions.
+All accepted requests returned an empty 200 response in 8--40 ms while a downstream Wait node remained
+blocked for three seconds. Four stored synthetic executions contained only the parsed body and safe
+webhook metadata; inspection found no shared secret, signature header, authorization or cookie material,
+or raw-body duplicate. The disposable profile, database, logs, installed package, proof scripts, npm
+cache, extracted files, and tarball were deleted after the final artifact measurements were recorded.
+
+No real BattleMetrics trigger is created during this phase. The owner-only live handoff is documented in
+[the webhook setup guide](battlemetrics-webhook-setup.md).
+
 Do not run live Return All merely to prove pagination: the collection can be large. The live Limit 11
 check is the bounded two-page proof; Return All termination, caps, ordering, included deduplication, and
 unsafe-link handling remain covered with controlled mocked responses.

@@ -1,0 +1,30 @@
+{
+	"id": "phase2aReceiveWebhook",
+	"name": "Receive a signed BattleMetrics webhook",
+	"nodes": [
+		{
+			"parameters": {},
+			"id": "2a000000-0000-4000-8000-111111111111",
+			"name": "BattleMetrics Trigger",
+			"type": "n8n-nodes-battlemetrics.battleMetricsTrigger",
+			"typeVersion": 1,
+			"position": [0, 0]
+		},
+		{
+			"parameters": {
+				"content": "## Manual webhook setup\nCreate a **BattleMetrics Webhook** credential with a high-entropy shared secret. Start listening and copy the Test URL, or activate this workflow and copy the Production URL. In BattleMetrics, add a Webhook action to a harmless personal trigger, paste the URL, enter the same secret, select JSON, and use a documented synthetic template. BattleMetrics setup is manual; never put the secret in the URL or body."
+			},
+			"id": "2a000000-0000-4000-8000-222222222222",
+			"name": "Setup notes",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-20, -280]
+		}
+	],
+	"connections": {},
+	"pinData": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	}
+}

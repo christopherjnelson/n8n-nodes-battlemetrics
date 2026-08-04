@@ -22,6 +22,14 @@ All notable changes to this project will be documented here.
 - An importable synthetic Player Get example workflow and privacy-focused diagnostics/tests.
 - Packed-artifact regressions for the allowlist, examples, metadata equality, exports, loadability,
   credential UX, runtime dependency count, sizes, and SHA-256.
+- A separate BattleMetrics Trigger and password-protected BattleMetrics Webhook credential for manually
+  configured outbound webhooks.
+- Strict exact-byte HMAC-SHA256 verification, JSON/plain-text parsing after authentication, immediate
+  acknowledgement, safe structured output, and fixed failure responses.
+- The public BattleMetrics signature known-answer vector plus parser, body, trigger, HTTP, output,
+  credential, metadata, and package regressions.
+- An importable generic webhook receiver, documented Server Update and Player Join JSON templates, a
+  raw-body ADR, manual setup guide, and live-test handoff.
 
 ### Changed
 

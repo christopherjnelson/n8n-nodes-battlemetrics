@@ -25,6 +25,10 @@
 - [x] Importable synthetic Server Get and Get Many examples included and regression tested
 - [x] Importable synthetic Game Get Many example included and regression tested
 - [x] Importable synthetic Player Get example included and regression tested
+- [x] Separate signed BattleMetrics Trigger and webhook-only credential implemented
+- [x] Exact raw-body HMAC known-answer and mutation regressions implemented
+- [x] Manual registration, retry/deduplication limits, safe templates, and output documented
+- [x] Exact Phase 2A tarball verified through Test and activated Production endpoints in disposable n8n
 - [x] Player diagnostics retain only structural key names and never enumerate or emit identity values
 - [x] Phase 1F Ban List/Ban reads stopped at the permission checkpoint; no moderation request or
       speculative operation was added
