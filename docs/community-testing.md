@@ -20,6 +20,17 @@ Never print or inspect `.env` contents, redirect verifier output to a tracked pa
 process argument. Use a subscribed test account, a least-privilege token, and an owner-approved server
 ID. Never extend the harness to writes without a separate approved phase.
 
+The Premium subscribed verifier passed on 2026-08-04. The sanitized result established successful
+Server Get and Server Get Many, one absolute same-origin keyset page follow, `401 invalidCredential`,
+and `404 resourceNotFound`. Successful responses used `application/json` with JSON:API-shaped `data`,
+`included`, and collection `links`; no raw body or live value was retained. Repeat only when a release
+change affects transport, validation, pagination, output, or error normalization.
+
+No repository-established interactive n8n test environment was available during that run. Package
+regression verified that the compiled node and credential load from the packed artifact, but credential
+selection, browser execution data, and manual Server Get/Get Many workflows remain release-hardening
+checks in a disposable local n8n instance.
+
 Before filtered collection reads, verify every query field in current first-party documentation and use
 synthetic search criteria and small limits. Before any moderation test,
 provide a disposable organization and ban list, a synthetic player/identifier permitted for testing, an

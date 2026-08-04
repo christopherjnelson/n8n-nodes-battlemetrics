@@ -24,12 +24,13 @@ Safe read-only `GET /servers?page[size]=1` requests on 2026-08-02 produced this 
 | No `Authorization` header                | HTTP `403`; JSON error document identified an API subscription requirement |
 | Obviously invalid synthetic Bearer token | HTTP `401`; JSON error document identified an invalid or expired token     |
 | Owner personal token without API access  | Not tested; no owner credential was supplied                               |
-| Owner token with API access              | Not tested; no owner credential was supplied                               |
+| Owner Premium token with API access      | HTTP `200` for Server Get and Server Get Many on 2026-08-04                |
 
-The first two rows show that the endpoint rejects an invalid Bearer token distinctly. They do not prove
-that every subscription `403` authenticates a supplied personal token, nor do they provide a success
-case. A credential-test button therefore cannot reliably certify that a credential is usable for an
-operation.
+The rows show that the endpoint rejects an invalid Bearer token distinctly and that an eligible
+subscribed token can authenticate successful Server reads. They do not prove that every subscription
+`403` authenticates a supplied personal token or that other resources share the same requirements. A
+credential-test button therefore still cannot reliably certify every operation, scope, or resource
+permission.
 
 ## Rejected alternative
 
@@ -45,3 +46,8 @@ credential only through successful subscribed Server requests, and separately ch
 invalid token. Its safe category matrix distinguishes `401` invalid credential, subscription-specific
 `403`, other `403` permission denial, and `404` missing resource without printing response bodies or
 credential material.
+
+The bounded subscribed verifier passed on 2026-08-04. It observed `200` for Server Get and two Server
+Get Many pages, `401 invalidCredential` for the synthetic token, and `404 resourceNotFound` for the
+synthetic in-range missing ID. All responses used `application/json` error/success media types with
+JSON:API-shaped envelopes.

@@ -69,8 +69,9 @@ checked in the live developer UI before use.
 The credential intentionally has no network test button. n8n cannot reliably prevalidate all token,
 subscription, scope, and resource-permission states, so the required secret is validated when an
 operation runs. Current safe observation distinguishes an invalid Bearer token (`401`) from the
-subscription-required response (`403`), but no owner-provided valid token was available to complete the
-matrix. A subscription response is never presented as successful credential validation.
+subscription-required response (`403`). On 2026-08-04, a subscribed owner token successfully completed
+Server Get and Server Get Many with `200` responses. A subscription response is never presented as
+successful credential validation.
 
 ### Permission status
 
@@ -106,13 +107,14 @@ information, preserves page order, detects repeated links, and enforces 100-page
 Errors preserve concise JSON:API status/title/detail information plus operation and input-item context.
 Bearer tokens, authorization/cookie values, and oversized text are redacted or truncated. With
 **Continue On Fail**, processing continues and a paired concise error item is returned. Observable
-categories include invalid credential, subscription required, permission denied, not found, rate
+categories include invalid credential, subscription required, permission denied, resource not found, rate
 limited, server error, timeout, network error, and malformed response. Automatic retry is deliberately
 deferred.
 
-BattleMetrics' current REST request quota and reset headers were not available in accessible official
-documentation. The documented outbound-webhook limits are a different system and are not used as REST
-limits here.
+The subscribed `200`, invalid-token `401`, and missing-server `404` responses observed on 2026-08-04
+did not expose REST quota, remaining, reset, or `Retry-After` headers. They did expose `api-version`,
+private cache control, and a cache-bypass status. The documented outbound-webhook limits are a different
+system and are not used as REST limits here.
 
 ## Opt-in live verification
 
@@ -131,8 +133,10 @@ For a repository-local `.env` that is ignored, untracked, and mode `600`, run:
 node --env-file=.env scripts/live-verify.mjs
 ```
 
-Do not redirect verifier output into a tracked file. No subscribed authenticated-success claim is made
-until the complete structural verifier passes with an owner-provided eligible credential.
+Do not redirect verifier output into a tracked file. A Premium subscribed run passed on 2026-08-04:
+Server Get and two Server Get Many pages returned `200 application/json`, the synthetic invalid token
+returned `401`, and the synthetic missing server returned `404`. Only sanitized structure was retained;
+no live body, credential, configured ID, player information, or private organization value was stored.
 
 ## Privacy and AI-tool safety
 

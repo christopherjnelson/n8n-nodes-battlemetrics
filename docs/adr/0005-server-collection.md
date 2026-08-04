@@ -19,9 +19,8 @@ parameter is supported.
 
 The exact collection path is identified by the first-party explorer URL and responds at the official
 API origin. The current explorer remained blocked to the research environment, including a fresh
-cookie-free browser, and neither a subscribed token nor a success response was available. A minimal
-collection request plus link-driven pagination provides useful behavior without turning historical or
-third-party examples into a claimed contract.
+cookie-free browser. A minimal collection request plus link-driven pagination provides useful behavior
+without turning historical or third-party examples into a claimed contract.
 
 ## Consequences
 
@@ -35,3 +34,9 @@ Many/Search.
 The first-party developer documentation remained inaccessible to automated retrieval. Public website
 server-list URLs were not treated as REST API documentation. No new query option was accepted without a
 successful subscribed structural verification, so the conservative decision remains unchanged.
+
+The subscribed run later that day directly observed absolute same-origin `/servers` next links using
+`page[key]` and `page[rel]`. Following one link returned a second valid Server collection page with no
+duplicate primary IDs across the adjacent pages. These keys remain opaque link state and are not exposed
+as user parameters. Page size, offsets, filters, sorting, includes, and sparse fieldsets remain
+unresolved, so the decision remains conservative.

@@ -14,6 +14,7 @@ All notable changes to this project will be documented here.
 - Opt-in, read-only, sanitized local live-verification harness.
 - Synthetic mocked test suite, original icon composition, documentation, and non-publishing CI.
 - Offline regressions for sanitized live-verifier summaries and packed codex metadata.
+- Sanitized synthetic fixtures matching the subscribed Server Get and Get Many structures.
 
 ### Changed
 
@@ -23,3 +24,6 @@ All notable changes to this project will be documented here.
 - Hardened the read-only live verifier for Server Get, bounded Server Get Many pagination, synthetic
   negative checks, safe header reporting, structural validation, and fail-closed results.
 - Corrected codex metadata to the fully qualified `n8n-nodes-battlemetrics.battleMetrics` identity.
+- Verified Premium subscribed Server reads, absolute keyset pagination, invalid credentials, and missing
+  resources against the live API without retaining response values.
+- Renamed the `404` error category to `resourceNotFound` to match the verified contract.

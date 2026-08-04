@@ -15,7 +15,8 @@
 - [x] Opt-in read-only live verifier fails closed and is excluded from CI
 - [x] Fully qualified codex metadata and supported categories verified in source, build, and package
 - [x] Temporary package regression gate verifies metadata, package contents, and compiled exports
-- [ ] Owner-provided subscribed live test completed
+- [x] Owner-provided Premium subscribed Server live test completed on 2026-08-04
+- [ ] Manual packed-package workflows verified in a disposable local n8n instance
 - [ ] Explicit `0.1.0` operation set chosen; broader read matrix remains a roadmap
 - [ ] Repository and npm ownership established by the owner
 - [ ] Security private-reporting channel configured
