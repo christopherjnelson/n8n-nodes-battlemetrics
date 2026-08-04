@@ -49,6 +49,15 @@ describe('sanitized live verifier', () => {
 		expect(paginationTarget(link)).toMatchObject({ presence: 'present', safe, form });
 	});
 
+	it('reports pagination query names without values or full URLs', () => {
+		const summary = paginationTarget(
+			'https://api.battlemetrics.com/servers?page%5Boffset%5D=synthetic-secret&page%5Bsize%5D=10',
+		);
+		expect(summary.queryParameterNames).toEqual(['page[offset]', 'page[size]']);
+		expect(JSON.stringify(summary)).not.toContain('synthetic-secret');
+		expect(JSON.stringify(summary)).not.toContain('https://');
+	});
+
 	it.each([
 		[401, { errors: [{ detail: 'Invalid token' }] }, 'invalidCredential'],
 		[403, { errors: [{ detail: 'A subscription is required' }] }, 'subscriptionRequired'],
@@ -69,13 +78,18 @@ describe('sanitized live verifier', () => {
 		expect(result).not.toHaveProperty('document');
 	});
 
-	it('accepts the expected JSON:API media type and retains only a structural summary', async () => {
+	it('accepts the live-observed application/json media type and retains only a structural summary', async () => {
 		vi.stubGlobal(
 			'fetch',
 			vi.fn().mockResolvedValue(
 				new Response(JSON.stringify({ data: [{ type: 'server', id: '12345678901234567890' }] }), {
 					status: 200,
-					headers: { 'content-type': 'application/vnd.api+json' },
+					headers: {
+						'content-type': 'application/json',
+						'api-version': '0.1.0',
+						'cache-control': 'private; max-age=0',
+						'cf-cache-status': 'BYPASS',
+					},
 				}),
 			),
 		);
@@ -88,7 +102,13 @@ describe('sanitized live verifier', () => {
 		expect(result).toMatchObject({
 			status: 200,
 			jsonMediaType: true,
-			jsonApiMediaType: true,
+			jsonApiMediaType: false,
+			headers: {
+				numeric: {},
+				apiVersion: '0.1.0',
+				cacheControl: 'private; max-age=0',
+				cacheStatus: 'BYPASS',
+			},
 			passed: true,
 			envelope: { kind: 'collection', allIdsAreExactStrings: true },
 		});

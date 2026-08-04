@@ -61,7 +61,7 @@ describe('safe error normalization', () => {
 		[401, 'The authentication token provided is invalid or expired', 'invalidCredential'],
 		[403, 'A subscription is required to use the API', 'subscriptionRequired'],
 		[403, 'You may not access this organization', 'permissionDenied'],
-		[404, 'Resource not found', 'notFound'],
+		[404, 'Resource not found', 'resourceNotFound'],
 		[429, 'Too many requests', 'rateLimited'],
 		[500, 'Internal server error', 'serverError'],
 	] as const)('classifies HTTP %s as %s-safe category %s', (statusCode, detail, category) => {

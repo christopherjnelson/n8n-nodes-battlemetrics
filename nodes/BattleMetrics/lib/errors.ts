@@ -18,7 +18,7 @@ export type BattleMetricsErrorCategory =
 	| 'invalidCredential'
 	| 'subscriptionRequired'
 	| 'permissionDenied'
-	| 'notFound'
+	| 'resourceNotFound'
 	| 'rateLimited'
 	| 'serverError'
 	| 'timeout'
@@ -75,7 +75,7 @@ function errorCategory(
 			? 'subscriptionRequired'
 			: 'permissionDenied';
 	}
-	if (statusCode === 404) return 'notFound';
+	if (statusCode === 404) return 'resourceNotFound';
 	if (statusCode === 429) return 'rateLimited';
 	if (statusCode !== undefined && statusCode >= 500) return 'serverError';
 	if (/malformed|unexpected token|invalid json/i.test(originalMessage)) return 'malformedResponse';

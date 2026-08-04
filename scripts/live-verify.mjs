@@ -7,7 +7,7 @@ const SERVERS_URL = `${API_ORIGIN}/servers`;
 const JSON_API_MEDIA_TYPE = 'application/vnd.api+json';
 const TIMEOUT_MS = 15_000;
 const SYNTHETIC_INVALID_TOKEN = 'phase-1b-synthetic-invalid-token';
-const SYNTHETIC_MISSING_SERVER_ID = '99999999999999999999';
+const SYNTHETIC_MISSING_SERVER_ID = '0';
 
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
 	const token = process.env.BATTLEMETRICS_ACCESS_TOKEN?.trim();
@@ -97,6 +97,7 @@ function paginationTarget(link) {
 		form: absolute ? 'absolute' : 'relative',
 		originValid: url.origin === API_ORIGIN,
 		pathValid: url.pathname === '/servers',
+		queryParameterNames: [...new Set(url.searchParams.keys())].sort(),
 		safe,
 	};
 }
