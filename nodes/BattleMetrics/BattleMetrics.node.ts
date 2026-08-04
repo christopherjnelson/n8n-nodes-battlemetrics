@@ -8,7 +8,12 @@ import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 import { BattleMetricsRequestError, normalizeError } from './lib/errors';
 import { opaqueResourceId, type ServerId } from './lib/inputValidation';
 import { requireCollection, requireSingleResource } from './lib/jsonApiValidation';
-import { combinedCollectionOutput, errorOutput, rawEnvelopeOutput } from './lib/output';
+import {
+	collectionOutput,
+	combinedCollectionOutput,
+	errorOutput,
+	rawEnvelopeOutput,
+} from './lib/output';
 import { collectPages } from './lib/pagination';
 import { DEFAULT_MAX_ITEMS } from './transport/constants';
 import { battleMetricsApiRequest, battleMetricsApiRequestUrl } from './transport/request';
@@ -20,7 +25,7 @@ export class BattleMetrics implements INodeType {
 		icon: { light: 'file:battleMetrics.svg', dark: 'file:battleMetrics.dark.svg' },
 		group: ['input'],
 		version: 1,
-		description: 'Read raw server data from the BattleMetrics API (unofficial)',
+		description: 'Read raw server and game data from the BattleMetrics API (unofficial)',
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		defaults: { name: 'BattleMetrics' },
 		inputs: [NodeConnectionTypes.Main],
@@ -40,12 +45,34 @@ export class BattleMetrics implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Game',
+						value: 'game',
+						description: 'A game supported by the BattleMetrics server directory',
+					},
+					{
 						name: 'Server',
 						value: 'server',
 						description: 'A game server identified by its BattleMetrics server ID',
 					},
 				],
 				default: 'server',
+			},
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: { show: { resource: ['game'] } },
+				options: [
+					{
+						name: 'Get Many',
+						value: 'getAll',
+						action: 'Get many games',
+						description:
+							"Get the raw game collection in the API's default ordering, with no server-side parameters. Limit trims locally; Return All follows pagination with 100-page and 10,000-item caps. Authentication and subscription requirements may vary.",
+					},
+				],
+				default: 'getAll',
 			},
 			{
 				displayName: 'Operation',
@@ -77,7 +104,7 @@ export class BattleMetrics implements INodeType {
 				type: 'boolean',
 				default: false,
 				description: 'Whether to return all results or only up to a given limit',
-				displayOptions: { show: { resource: ['server'], operation: ['getAll'] } },
+				displayOptions: { show: { resource: ['server', 'game'], operation: ['getAll'] } },
 			},
 			{
 				displayName: 'Limit',
@@ -87,7 +114,7 @@ export class BattleMetrics implements INodeType {
 				default: 50,
 				description: 'Max number of results to return',
 				displayOptions: {
-					show: { resource: ['server'], operation: ['getAll'], returnAll: [false] },
+					show: { resource: ['server', 'game'], operation: ['getAll'], returnAll: [false] },
 				},
 			},
 			{
@@ -108,10 +135,13 @@ export class BattleMetrics implements INodeType {
 		const outputs: INodeExecutionData[] = [];
 
 		for (let itemIndex = 0; itemIndex < inputs.length; itemIndex++) {
+			const resource = this.getNodeParameter('resource', itemIndex) as string;
 			const selectedOperation = this.getNodeParameter('operation', itemIndex);
-			const operation = selectedOperation === 'getAll' ? 'Server: Get Many' : 'Server: Get';
+			const resourceLabel = resource === 'game' ? 'Game' : 'Server';
+			const operation =
+				selectedOperation === 'getAll' ? `${resourceLabel}: Get Many` : `${resourceLabel}: Get`;
 			try {
-				if (selectedOperation === 'get') {
+				if (resource === 'server' && selectedOperation === 'get') {
 					const serverId = opaqueResourceId<'server'>(
 						this.getNodeParameter('serverId', itemIndex),
 						'Server ID',
@@ -127,8 +157,8 @@ export class BattleMetrics implements INodeType {
 					continue;
 				}
 
-				if (selectedOperation !== 'getAll') {
-					throw new NodeOperationError(this.getNode(), 'Unsupported Server operation', {
+				if (!['server', 'game'].includes(resource) || selectedOperation !== 'getAll') {
+					throw new NodeOperationError(this.getNode(), `Unsupported ${resourceLabel} operation`, {
 						itemIndex,
 					});
 				}
@@ -150,18 +180,19 @@ export class BattleMetrics implements INodeType {
 				const limit = limitValue as number | undefined;
 				const initial = await battleMetricsApiRequest.call(this, {
 					method: 'GET',
-					pathSegments: ['servers'],
+					pathSegments: [resource === 'game' ? 'games' : 'servers'],
 					itemIndex,
 					operation,
 				});
-				requireCollection(initial, 'server');
+				requireCollection(initial, resource);
 				const result = await collectPages(
 					initial,
 					async (url) => {
-						if (url.pathname !== '/servers') {
+						const expectedPath = resource === 'game' ? '/games' : '/servers';
+						if (url.pathname !== expectedPath) {
 							throw new NodeOperationError(
 								this.getNode(),
-								'Unsafe pagination link: expected the /servers path',
+								`Unsafe pagination link: expected the ${expectedPath} path`,
 								{ itemIndex },
 							);
 						}
@@ -171,12 +202,16 @@ export class BattleMetrics implements INodeType {
 							itemIndex,
 							operation,
 						});
-						requireCollection(next, 'server');
+						requireCollection(next, resource);
 						return next;
 					},
 					{ ...(limit === undefined ? {} : { limit }) },
 				);
-				outputs.push(combinedCollectionOutput(result.documents, itemIndex, limit));
+				outputs.push(
+					resource === 'game'
+						? collectionOutput(result.documents, itemIndex, limit)
+						: combinedCollectionOutput(result.documents, itemIndex, limit),
+				);
 			} catch (error) {
 				const normalized = normalizeError(error, { operation, itemIndex });
 				if (this.continueOnFail()) {

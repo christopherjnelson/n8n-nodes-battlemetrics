@@ -1,4 +1,4 @@
-import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n-workflow';
+import type { ICredentialType, INodeProperties } from 'n8n-workflow';
 
 // A network test cannot distinguish all credential/subscription states; see ADR 0004.
 // eslint-disable-next-line @n8n/community-nodes/credential-test-required
@@ -26,13 +26,4 @@ export class BattleMetricsApi implements ICredentialType {
 				'A BattleMetrics personal access token. A token may not include REST API access without an eligible BattleMetrics subscription. n8n cannot prevalidate this reliably, so the credential is validated when an operation runs. It is stored only in n8n credentials.',
 		},
 	];
-
-	authenticate: IAuthenticateGeneric = {
-		type: 'generic',
-		properties: {
-			headers: {
-				Authorization: '=Bearer {{$credentials.accessToken}}',
-			},
-		},
-	};
 }

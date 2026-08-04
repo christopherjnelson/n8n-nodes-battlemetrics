@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 
 const API_ORIGIN = 'https://api.battlemetrics.com';
 const SERVERS_URL = `${API_ORIGIN}/servers`;
+const GAMES_URL = `${API_ORIGIN}/games`;
 const JSON_API_MEDIA_TYPE = 'application/vnd.api+json';
 const TIMEOUT_MS = 15_000;
 const SYNTHETIC_INVALID_TOKEN = 'phase-1b-synthetic-invalid-token';
@@ -13,10 +14,8 @@ if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) 
 	const token = process.env.BATTLEMETRICS_ACCESS_TOKEN?.trim();
 	const serverId = process.env.BATTLEMETRICS_SERVER_ID?.trim();
 
-	if (!token || !serverId) {
-		console.error(
-			'Refusing live verification: non-empty BATTLEMETRICS_ACCESS_TOKEN and BATTLEMETRICS_SERVER_ID are required.',
-		);
+	if (!token) {
+		console.error('Refusing live verification: BATTLEMETRICS_ACCESS_TOKEN must be non-empty.');
 		process.exitCode = 1;
 	} else if (token === SYNTHETIC_INVALID_TOKEN) {
 		console.error(
@@ -77,7 +76,7 @@ function linkHref(link) {
 	return isRecord(link) && typeof link.href === 'string' ? link.href : undefined;
 }
 
-function paginationTarget(link) {
+function paginationTarget(link, expectedPath = '/servers') {
 	if (link === undefined) return { presence: 'missing' };
 	if (link === null) return { presence: 'null' };
 	const href = linkHref(link);
@@ -89,14 +88,14 @@ function paginationTarget(link) {
 	const safe =
 		url.protocol === 'https:' &&
 		url.origin === API_ORIGIN &&
-		url.pathname === '/servers' &&
+		url.pathname === expectedPath &&
 		url.username === '' &&
 		url.password === '';
 	return {
 		presence: 'present',
 		form: absolute ? 'absolute' : 'relative',
 		originValid: url.origin === API_ORIGIN,
-		pathValid: url.pathname === '/servers',
+		pathValid: url.pathname === expectedPath,
 		queryParameterNames: [...new Set(url.searchParams.keys())].sort(),
 		safe,
 	};
@@ -114,7 +113,7 @@ function resourceSummary(resource) {
 	};
 }
 
-function envelopeSummary(document, expectedKind) {
+function envelopeSummary(document, expectedKind, expectedPath = '/servers') {
 	if (!isRecord(document)) return { valid: false, reason: 'top-level value is not an object' };
 	const hasData = Object.hasOwn(document, 'data');
 	const hasErrors = Object.hasOwn(document, 'errors');
@@ -173,7 +172,7 @@ function envelopeSummary(document, expectedKind) {
 					? 'missing'
 					: 'other',
 			keys: sortedKeys(document.links),
-			next: paginationTarget(document.links?.next),
+			next: paginationTarget(document.links?.next, expectedPath),
 		},
 		meta: {
 			present: Object.hasOwn(document, 'meta'),
@@ -213,7 +212,7 @@ function errorCategory(status, document) {
 	return status >= 500 ? 'serverError' : 'requestFailed';
 }
 
-async function request(label, url, bearerToken, expectedKind) {
+async function request(label, url, bearerToken, expectedKind, expectedPath = '/servers') {
 	const started = performance.now();
 	let response;
 	try {
@@ -237,7 +236,7 @@ async function request(label, url, bearerToken, expectedKind) {
 	} catch {
 		parseError = true;
 	}
-	const envelope = parseError ? null : envelopeSummary(document, expectedKind);
+	const envelope = parseError ? null : envelopeSummary(document, expectedKind, expectedPath);
 	return {
 		label,
 		status: response.status,
@@ -261,15 +260,17 @@ function publicResult(result, extra = {}) {
 
 async function verify(accessToken, configuredServerId) {
 	const results = [];
-	const get = await request(
-		'Server Get',
-		`${SERVERS_URL}/${encodeURIComponent(configuredServerId)}`,
-		accessToken,
-		'single',
-	);
-	const getIdMatches = get.document?.data?.id === configuredServerId;
-	get.passed = get.passed && get.document?.data?.type === 'server' && getIdMatches;
-	results.push(publicResult(get, { requestedIdMatches: getIdMatches }));
+	if (configuredServerId) {
+		const get = await request(
+			'Server Get',
+			`${SERVERS_URL}/${encodeURIComponent(configuredServerId)}`,
+			accessToken,
+			'single',
+		);
+		const getIdMatches = get.document?.data?.id === configuredServerId;
+		get.passed = get.passed && get.document?.data?.type === 'server' && getIdMatches;
+		results.push(publicResult(get, { requestedIdMatches: getIdMatches }));
+	}
 
 	const collection = await request(
 		'Server Get Many page 1',
@@ -325,6 +326,63 @@ async function verify(accessToken, configuredServerId) {
 		});
 	}
 
+	const games = await request(
+		'Game Get Many page 1',
+		GAMES_URL,
+		accessToken,
+		'collection',
+		'/games',
+	);
+	const gameTypesValid =
+		Array.isArray(games.document?.data) &&
+		games.document.data.every((resource) => resource?.type === 'game');
+	games.passed = games.passed && gameTypesValid;
+	results.push(publicResult(games, { resourceTypesValid: gameTypesValid }));
+
+	const gamesNext = games.document?.links?.next;
+	const gamesNextTarget = paginationTarget(gamesNext, '/games');
+	if (games.passed && gamesNextTarget.presence === 'present') {
+		if (!gamesNextTarget.safe) {
+			results.push({
+				label: 'Game Get Many page 2',
+				passed: false,
+				failure: 'unsafePaginationTarget',
+			});
+		} else {
+			const nextUrl = new URL(linkHref(gamesNext), GAMES_URL);
+			const page2 = await request(
+				'Game Get Many page 2',
+				nextUrl,
+				accessToken,
+				'collection',
+				'/games',
+			);
+			const firstIds = new Set(
+				games.document.data.map((resource) => resource?.id).filter((id) => typeof id === 'string'),
+			);
+			const duplicatePrimaryIds = Array.isArray(page2.document?.data)
+				? page2.document.data.filter((resource) => firstIds.has(resource?.id)).length
+				: null;
+			const page2TypesValid =
+				Array.isArray(page2.document?.data) &&
+				page2.document.data.every((resource) => resource?.type === 'game');
+			page2.passed = page2.passed && page2TypesValid && duplicatePrimaryIds === 0;
+			results.push(
+				publicResult(page2, {
+					resourceTypesValid: page2TypesValid,
+					duplicatePrimaryIdsAcrossAdjacentPages: duplicatePrimaryIds,
+				}),
+			);
+		}
+	} else {
+		results.push({
+			label: 'Game Get Many page 2',
+			passed: games.passed && ['missing', 'null'].includes(gamesNextTarget.presence),
+			skipped: true,
+			reason: gamesNextTarget.presence === 'present' ? 'page 1 failed' : 'no next link',
+		});
+	}
+
 	const invalidToken = await request(
 		'Invalid token negative check',
 		`${SERVERS_URL}/${encodeURIComponent(configuredServerId)}`,
@@ -338,18 +396,20 @@ async function verify(accessToken, configuredServerId) {
 		invalidToken.envelope?.kind === 'error';
 	results.push(publicResult(invalidToken));
 
-	const invalidId = await request(
-		'Invalid server ID negative check',
-		`${SERVERS_URL}/${SYNTHETIC_MISSING_SERVER_ID}`,
-		accessToken,
-	);
-	invalidId.passed =
-		invalidId.status === 404 &&
-		invalidId.category === 'resourceNotFound' &&
-		invalidId.parseError === false &&
-		invalidId.envelope?.valid === true &&
-		invalidId.envelope?.kind === 'error';
-	results.push(publicResult(invalidId));
+	if (configuredServerId) {
+		const invalidId = await request(
+			'Invalid server ID negative check',
+			`${SERVERS_URL}/${SYNTHETIC_MISSING_SERVER_ID}`,
+			accessToken,
+		);
+		invalidId.passed =
+			invalidId.status === 404 &&
+			invalidId.category === 'resourceNotFound' &&
+			invalidId.parseError === false &&
+			invalidId.envelope?.valid === true &&
+			invalidId.envelope?.kind === 'error';
+		results.push(publicResult(invalidId));
+	}
 
 	for (const result of results) console.log(JSON.stringify(result, null, 2));
 	const passed = results.every((result) => result.passed === true);

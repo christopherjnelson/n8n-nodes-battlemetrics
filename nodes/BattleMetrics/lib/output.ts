@@ -65,6 +65,21 @@ export function combinedCollectionOutput(
 	};
 }
 
+export function collectionOutput(
+	documents: readonly JsonApiCollectionDocument[],
+	itemIndex: number,
+	limit?: number,
+): INodeExecutionData {
+	if (documents.length !== 1) return combinedCollectionOutput(documents, itemIndex, limit);
+	const source = documents[0];
+	if (source === undefined) return combinedCollectionOutput(documents, itemIndex, limit);
+	const data = limit === undefined ? source.data : source.data.slice(0, limit);
+	return {
+		json: { ...source, data } as unknown as IDataObject,
+		pairedItem: { item: itemIndex },
+	};
+}
+
 export function errorOutput(
 	error: BattleMetricsRequestError,
 	operation: string,

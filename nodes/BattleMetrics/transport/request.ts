@@ -53,11 +53,20 @@ async function requestJsonApi(
 	},
 ): Promise<JsonApiDocument> {
 	const query = queryObject(options.query);
+	const credentials = await this.getCredentials('battleMetricsApi', options.itemIndex);
+	const accessToken = credentials.accessToken;
+	if (typeof accessToken !== 'string' || accessToken.trim() === '') {
+		throw normalizeError(new Error('BattleMetrics Access Token is required'), {
+			operation: options.operation,
+			itemIndex: options.itemIndex,
+		});
+	}
 	const request: IHttpRequestOptions = {
 		method: options.method,
 		url: options.url.href,
 		headers: {
 			Accept: JSON_API_MEDIA_TYPE,
+			Authorization: `Bearer ${accessToken}`,
 			...(options.body === undefined ? {} : { 'Content-Type': JSON_API_MEDIA_TYPE }),
 		},
 		...(Object.keys(query).length === 0 ? {} : { qs: query }),
