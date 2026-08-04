@@ -29,6 +29,7 @@
 		"format:check": "prettier --check .",
 		"lint": "n8n-node lint",
 		"test": "vitest run",
+		"test:package": "node scripts/package-regression.mjs",
 		"typecheck": "tsc --noEmit --incremental false && tsc -p tsconfig.test.json",
 		"validate": "n8n-node lint",
 		"verify:live": "node scripts/live-verify.mjs"

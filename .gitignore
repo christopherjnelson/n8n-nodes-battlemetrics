@@ -7,3 +7,5 @@ coverage/
 !.env.example
 .DS_Store
 *.log
+live-verification-output.*
+live-verify-output.*

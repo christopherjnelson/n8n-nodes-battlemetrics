@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BattleMetricsApi } from '../../../credentials/BattleMetricsApi.credentials';
 import packageJson from '../../../package.json';
 import { BattleMetrics } from '../BattleMetrics.node';
+import codexMetadata from '../BattleMetrics.node.json';
 import { BATTLEMETRICS_API_ORIGIN } from '../transport/constants';
 
 describe('package and node metadata', () => {
@@ -11,6 +12,12 @@ describe('package and node metadata', () => {
 		expect(node.description.displayName).toBe('BattleMetrics');
 		expect(node.description.name).toBe('battleMetrics');
 		expect(node.description.version).toBe(1);
+	});
+
+	it('uses the fully qualified codex node and supported categories', () => {
+		expect(codexMetadata.node).toBe('n8n-nodes-battlemetrics.battleMetrics');
+		expect(codexMetadata.categories).toEqual(['Data & Storage', 'Development']);
+		expect(codexMetadata.categories).not.toContain('Developer Tools');
 	});
 
 	it('supports standard Main input and output and AI tools', () => {

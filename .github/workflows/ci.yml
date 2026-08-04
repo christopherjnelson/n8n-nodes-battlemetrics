@@ -34,4 +34,5 @@ jobs:
       - run: pnpm test
       - run: pnpm run build
       - run: pnpm pack --dry-run
+      - run: pnpm run test:package
       - run: git diff --check
