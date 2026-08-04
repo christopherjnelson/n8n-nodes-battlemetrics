@@ -84,6 +84,18 @@ function errorCategory(
 	return 'requestFailed';
 }
 
+function httpStatus(value: unknown): number | undefined {
+	const parsed =
+		typeof value === 'number'
+			? value
+			: typeof value === 'string' && /^\d{3}$/.test(value.trim())
+				? Number(value)
+				: undefined;
+	return parsed !== undefined && Number.isInteger(parsed) && parsed >= 100 && parsed <= 599
+		? parsed
+		: undefined;
+}
+
 export function normalizeError(
 	error: unknown,
 	context: Pick<SafeErrorContext, 'operation' | 'itemIndex'>,
@@ -96,11 +108,10 @@ export function normalizeError(
 			? (record.response as Record<string, unknown>)
 			: undefined;
 	const statusCode =
-		typeof record.statusCode === 'number'
-			? record.statusCode
-			: typeof response?.statusCode === 'number'
-				? response.statusCode
-				: undefined;
+		httpStatus(record.statusCode) ??
+		httpStatus(record.httpCode) ??
+		httpStatus(response?.statusCode) ??
+		httpStatus(response?.status);
 	const body = response?.body ?? record.body;
 	const apiDetails = errorDocumentDetails(body);
 	const originalMessage = error instanceof Error ? error.message : String(error);

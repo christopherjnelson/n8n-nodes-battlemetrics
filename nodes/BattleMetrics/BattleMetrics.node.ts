@@ -20,7 +20,7 @@ export class BattleMetrics implements INodeType {
 		icon: { light: 'file:battleMetrics.svg', dark: 'file:battleMetrics.dark.svg' },
 		group: ['input'],
 		version: 1,
-		description: 'Read data from the BattleMetrics API (unofficial)',
+		description: 'Read raw server data from the BattleMetrics API (unofficial)',
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		defaults: { name: 'BattleMetrics' },
 		inputs: [NodeConnectionTypes.Main],
@@ -38,7 +38,13 @@ export class BattleMetrics implements INodeType {
 				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
-				options: [{ name: 'Server', value: 'server' }],
+				options: [
+					{
+						name: 'Server',
+						value: 'server',
+						description: 'A game server identified by its BattleMetrics server ID',
+					},
+				],
 				default: 'server',
 			},
 			{
@@ -52,14 +58,15 @@ export class BattleMetrics implements INodeType {
 						name: 'Get',
 						value: 'get',
 						action: 'Get a server',
-						description: 'Get one server by its opaque BattleMetrics server ID',
+						description:
+							'Get one raw server envelope by its BattleMetrics server ID. API access may require an eligible subscription.',
 					},
 					{
 						name: 'Get Many',
 						value: 'getAll',
 						action: 'Get many servers',
 						description:
-							'Get the server collection. BattleMetrics REST API access may require an eligible subscription.',
+							"Get the raw server collection in the API's default ordering, with no server-side filters. API access may require an eligible subscription.",
 					},
 				],
 				default: 'get',
@@ -69,7 +76,8 @@ export class BattleMetrics implements INodeType {
 				name: 'returnAll',
 				type: 'boolean',
 				default: false,
-				description: 'Whether to return all results or only up to a given limit',
+				description:
+					'Whether to follow BattleMetrics pagination until it ends, subject to the 100-page and 10,000-item safety caps',
 				displayOptions: { show: { resource: ['server'], operation: ['getAll'] } },
 			},
 			{
@@ -78,7 +86,8 @@ export class BattleMetrics implements INodeType {
 				type: 'number',
 				typeOptions: { minValue: 1, maxValue: DEFAULT_MAX_ITEMS },
 				default: 50,
-				description: 'Max number of results to return',
+				description:
+					'Maximum number of primary server resources to return. The node trims results locally and never returns more than this limit.',
 				displayOptions: {
 					show: { resource: ['server'], operation: ['getAll'], returnAll: [false] },
 				},
@@ -89,7 +98,8 @@ export class BattleMetrics implements INodeType {
 				type: 'string',
 				required: true,
 				default: '',
-				description: 'Opaque BattleMetrics server ID. It is never converted to a number.',
+				description:
+					'Opaque BattleMetrics server ID, not a server name, address, Steam ID, or game ID. It remains a string.',
 				displayOptions: { show: { resource: ['server'], operation: ['get'] } },
 			},
 		],

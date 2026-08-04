@@ -78,6 +78,32 @@ describe('safe error normalization', () => {
 	});
 
 	it.each([
+		['401', 'invalidCredential'],
+		['403', 'permissionDenied'],
+		['404', 'resourceNotFound'],
+		['429', 'rateLimited'],
+		['503', 'serverError'],
+	] as const)('classifies n8n NodeApiError httpCode %s as %s', (httpCode, category) => {
+		const normalized = normalizeError(
+			{ httpCode, message: 'Synthetic n8n NodeApiError' },
+			{ operation: 'Server: Get', itemIndex: 0 },
+		);
+		expect(normalized.context).toMatchObject({ statusCode: Number(httpCode), category });
+	});
+
+	it('accepts a numeric-string response status without trusting non-HTTP values', () => {
+		expect(
+			normalizeError(
+				{ response: { statusCode: '404' } },
+				{ operation: 'Server: Get', itemIndex: 0 },
+			).context,
+		).toMatchObject({ statusCode: 404, category: 'resourceNotFound' });
+		expect(
+			normalizeError({ httpCode: '999' }, { operation: 'Server: Get', itemIndex: 0 }).context,
+		).not.toHaveProperty('statusCode');
+	});
+
+	it.each([
 		['Request timed out', 'timeout'],
 		['ECONNRESET network failure', 'networkError'],
 		['Unexpected token in JSON', 'malformedResponse'],

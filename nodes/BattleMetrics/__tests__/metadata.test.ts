@@ -92,6 +92,27 @@ describe('package and node metadata', () => {
 		}
 	});
 
+	it('explains the Server operations without speculative controls', () => {
+		const property = (name: string) =>
+			node.description.properties.find((candidate) => candidate.name === name);
+		const operation = property('operation');
+		const options = Array.isArray(operation?.options) ? operation.options : [];
+		const get = options.find((option) => 'value' in option && option.value === 'get');
+		const getMany = options.find((option) => 'value' in option && option.value === 'getAll');
+		expect(get?.description).toContain('raw server envelope');
+		expect(get?.description).toContain('BattleMetrics server ID');
+		expect(get?.description).toContain('eligible subscription');
+		expect(getMany?.description).toContain("API's default ordering");
+		expect(getMany?.description).toContain('no server-side filters');
+		expect(getMany?.description).toContain('eligible subscription');
+		expect(property('serverId')).toMatchObject({ required: true, default: '' });
+		expect(property('serverId')?.description).toContain(
+			'not a server name, address, Steam ID, or game ID',
+		);
+		expect(property('returnAll')?.description).toContain('100-page and 10,000-item safety caps');
+		expect(property('limit')?.description).toContain('trims results locally');
+	});
+
 	it('has correct package metadata and exports', () => {
 		expect(packageJson).toMatchObject({
 			name: 'n8n-nodes-battlemetrics',
