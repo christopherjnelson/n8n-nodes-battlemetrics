@@ -176,8 +176,16 @@ try {
 	);
 	assert(
 		JSON.stringify(resources?.options?.map(({ value }) => value)) ===
-			JSON.stringify(['game', 'server']),
+			JSON.stringify(['game', 'player', 'server']),
 		'Packed node resources are missing, unexpected, or unstable',
+	);
+	const playerOperation = node.description.properties.find(
+		(property) =>
+			property.name === 'operation' && property.displayOptions?.show?.resource?.includes('player'),
+	);
+	assert(
+		JSON.stringify(playerOperation?.options?.map(({ value }) => value)) === JSON.stringify(['get']),
+		'Packed Player operations are missing, unexpected, or unstable',
 	);
 	assert(
 		JSON.stringify(gameOperation?.options?.map(({ value }) => value)) ===
@@ -190,7 +198,7 @@ try {
 		.sort();
 	assert(
 		JSON.stringify(exampleFiles) ===
-			JSON.stringify(['get-games.json', 'get-server.json', 'get-servers.json']),
+			JSON.stringify(['get-games.json', 'get-player.json', 'get-server.json', 'get-servers.json']),
 		'Packed examples are missing or unexpected',
 	);
 	for (const name of exampleFiles) {

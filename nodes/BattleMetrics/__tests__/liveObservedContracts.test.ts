@@ -14,6 +14,10 @@ import {
 	sanitizedServerPageTwo,
 	sanitizedSingleServerDocument,
 } from './fixtures/liveObservedServer';
+import {
+	PLAYER_LIVE_OBSERVED_SUCCESS_CONTENT_TYPE,
+	sanitizedSinglePlayerDocument,
+} from './fixtures/liveObservedPlayer';
 
 describe('sanitized subscribed Server contracts', () => {
 	it('preserves the live-observed single-resource structure and exact opaque ID', () => {
@@ -90,6 +94,44 @@ describe('sanitized subscribed Server contracts', () => {
 				},
 			},
 			{ operation: 'Server: Get', itemIndex: 0 },
+		);
+		expect(normalized.context.category).toBe('resourceNotFound');
+	});
+});
+
+describe('sanitized subscribed Player contract', () => {
+	it('preserves the live-observed single-resource structure and exact opaque ID', () => {
+		const document = validateJsonApiDocument(sanitizedSinglePlayerDocument);
+		const player = requireSingleResource(document, 'player');
+		expect(player.id).toBe('12345678901234567890');
+		expect(Object.keys(player.attributes ?? {}).sort()).toEqual([
+			'createdAt',
+			'id',
+			'name',
+			'positiveMatch',
+			'private',
+			'updatedAt',
+		]);
+		expect(Object.keys(player.relationships ?? {})).toEqual([]);
+		expect(sanitizedSinglePlayerDocument).toMatchObject({ included: [] });
+		expect(sanitizedSinglePlayerDocument).not.toHaveProperty('links');
+		expect(sanitizedSinglePlayerDocument).not.toHaveProperty('meta');
+		expect(sanitizedSinglePlayerDocument).not.toHaveProperty('jsonapi');
+	});
+
+	it('accepts the observed Player success content type', () => {
+		expect(PLAYER_LIVE_OBSERVED_SUCCESS_CONTENT_TYPE).toBe('application/json');
+	});
+
+	it('normalizes the observed missing-player shape as resourceNotFound', () => {
+		const normalized = normalizeError(
+			{
+				response: {
+					statusCode: 404,
+					body: { errors: [{ status: '404', title: 'Synthetic missing resource' }] },
+				},
+			},
+			{ operation: 'Player: Get', itemIndex: 0 },
 		);
 		expect(normalized.context.category).toBe('resourceNotFound');
 	});

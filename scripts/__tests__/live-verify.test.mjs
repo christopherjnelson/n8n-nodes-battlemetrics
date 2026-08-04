@@ -40,6 +40,32 @@ describe('sanitized live verifier', () => {
 		expect(JSON.stringify(summary)).not.toContain('12345678901234567890');
 	});
 
+	it('summarizes a representative player envelope without copying identity values', () => {
+		const privateName = 'must-not-appear-player-name';
+		const summary = envelopeSummary(
+			{
+				data: {
+					type: 'player',
+					id: '12345678901234567890',
+					attributes: { name: privateName, private: false },
+					relationships: { servers: { data: [] } },
+				},
+				included: [],
+			},
+			'single',
+			'/players',
+		);
+		expect(summary).toMatchObject({
+			valid: true,
+			kind: 'single',
+			resourceTypes: ['player'],
+			attributeKeys: ['name', 'private'],
+			relationshipKeys: ['servers'],
+		});
+		expect(JSON.stringify(summary)).not.toContain(privateName);
+		expect(JSON.stringify(summary)).not.toContain('12345678901234567890');
+	});
+
 	it.each([
 		['/servers?page%5Boffset%5D=100', true, 'relative'],
 		['https://api.battlemetrics.com/servers?page%5Boffset%5D=100', true, 'absolute'],

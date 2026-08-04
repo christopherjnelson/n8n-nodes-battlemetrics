@@ -70,7 +70,7 @@ describe('package and node metadata', () => {
 		expect(BATTLEMETRICS_API_ORIGIN).toBe('https://api.battlemetrics.com');
 	});
 
-	it('exposes only verified collection controls for Server and Game', () => {
+	it('exposes only verified operations for Server, Game, and Player', () => {
 		const operations = node.description.properties.filter(
 			(property) => property.name === 'operation',
 		);
@@ -79,6 +79,9 @@ describe('package and node metadata', () => {
 		);
 		const gameOperation = operations.find((property) =>
 			property.displayOptions?.show?.resource?.includes('game'),
+		);
+		const playerOperation = operations.find((property) =>
+			property.displayOptions?.show?.resource?.includes('player'),
 		);
 		expect(serverOperation?.options).toEqual(
 			expect.arrayContaining([expect.objectContaining({ name: 'Get Many', value: 'getAll' })]),
@@ -89,6 +92,9 @@ describe('package and node metadata', () => {
 		expect(gameOperation?.options).not.toEqual(
 			expect.arrayContaining([expect.objectContaining({ value: 'get' })]),
 		);
+		expect(playerOperation?.options).toEqual([
+			expect.objectContaining({ name: 'Get', value: 'get', action: 'Get a player' }),
+		]);
 		expect(node.description.properties).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ name: 'returnAll', type: 'boolean' }),
@@ -99,6 +105,51 @@ describe('package and node metadata', () => {
 			expect(node.description.properties.some((property) => property.name === unverified)).toBe(
 				false,
 			);
+		}
+	});
+
+	it('describes Player Get precisely and exposes no sensitive or speculative fields', () => {
+		const resources = node.description.properties.find((property) => property.name === 'resource');
+		expect(resources?.options).toEqual(
+			expect.arrayContaining([expect.objectContaining({ name: 'Player', value: 'player' })]),
+		);
+		const operation = node.description.properties.find(
+			(property) =>
+				property.name === 'operation' &&
+				property.displayOptions?.show?.resource?.includes('player'),
+		);
+		const option = Array.isArray(operation?.options) ? operation.options[0] : undefined;
+		const description = option && 'description' in option ? option.description : '';
+		expect(description).toContain('raw player envelope');
+		expect(description).toContain('BattleMetrics Player ID');
+		expect(description).toContain('does not search by display name or platform identifier');
+		expect(description).toContain('eligible subscription');
+		expect(description).toContain('minimize retention and forwarding');
+		const playerId = node.description.properties.find((property) => property.name === 'playerId');
+		expect(playerId).toMatchObject({
+			displayName: 'Player ID',
+			required: true,
+			default: '',
+			displayOptions: { show: { resource: ['player'], operation: ['get'] } },
+		});
+		expect(playerId?.description).toContain('not a player display name');
+		expect(playerId?.description).toContain('Steam ID');
+		expect(playerId?.description).toContain('server ID');
+		for (const name of [
+			'playerName',
+			'searchText',
+			'serverId',
+			'identifier',
+			'include',
+			'notes',
+			'flags',
+			'sessions',
+		]) {
+			const field = node.description.properties.find(
+				(property) =>
+					property.name === name && property.displayOptions?.show?.resource?.includes('player'),
+			);
+			expect(field).toBeUndefined();
 		}
 	});
 

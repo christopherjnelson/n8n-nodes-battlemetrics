@@ -13,12 +13,17 @@ const workflows = workflowFiles.map((name) => ({
 
 describe('example workflows', () => {
 	it('provides the required examples as valid JSON', () => {
-		expect(workflowFiles).toEqual(['get-games.json', 'get-server.json', 'get-servers.json']);
+		expect(workflowFiles).toEqual([
+			'get-games.json',
+			'get-player.json',
+			'get-server.json',
+			'get-servers.json',
+		]);
 	});
 
 	it.each(workflows)('$name has an importable workflow structure', ({ workflow }) => {
 		expect(workflow).toMatchObject({
-			id: expect.stringMatching(/^phase1[cd]/),
+			id: expect.stringMatching(/^phase1[cde]/),
 			active: false,
 			nodes: expect.any(Array),
 			connections: expect.any(Object),
@@ -38,6 +43,12 @@ describe('example workflows', () => {
 			expect(nodes[0]).toMatchObject({ typeVersion: 1 });
 			if (name === 'get-games.json') {
 				expect(nodes[0]?.parameters).toMatchObject({ resource: 'game', operation: 'getAll' });
+			} else if (name === 'get-player.json') {
+				expect(nodes[0]?.parameters).toEqual({
+					resource: 'player',
+					operation: 'get',
+					playerId: '12345678901234567890',
+				});
 			} else {
 				expect(nodes[0]?.parameters).toMatchObject({
 					resource: 'server',
@@ -46,6 +57,13 @@ describe('example workflows', () => {
 			}
 		},
 	);
+
+	it('uses only the approved synthetic Player identity', () => {
+		const example = workflows.find(({ name }) => name === 'get-player.json')?.workflow;
+		const serialized = JSON.stringify(example);
+		expect(serialized).toContain('12345678901234567890');
+		expect(serialized).not.toContain('00000000000000000');
+	});
 
 	it.each(workflows)(
 		'$name contains no credentials, execution data, or private values',
