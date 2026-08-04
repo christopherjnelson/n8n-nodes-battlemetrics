@@ -47,10 +47,12 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/BattleMetricsApi.credentials.js"
+			"dist/credentials/BattleMetricsApi.credentials.js",
+			"dist/credentials/BattleMetricsWebhook.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/BattleMetrics/BattleMetrics.node.js"
+			"dist/nodes/BattleMetrics/BattleMetrics.node.js",
+			"dist/nodes/BattleMetrics/BattleMetricsTrigger.node.js"
 		]
 	},
 	"devDependencies": {
