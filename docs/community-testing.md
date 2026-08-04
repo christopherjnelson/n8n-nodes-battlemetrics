@@ -2,25 +2,23 @@
 
 Normal tests and CI are fully synthetic and must never contact BattleMetrics.
 
-The repository provides `pnpm run verify:live`. It fails closed unless
-`BATTLEMETRICS_ACCESS_TOKEN` is set, performs only read-only `GET /servers`, and summarizes sanitized
-status, content type, envelope shape, pagination form, and relevant rate-limit headers. It does not log
-authorization headers, token values, resource IDs, or response bodies and is not run by normal tests or
-CI.
+The repository provides `pnpm run verify:live`. It fails closed unless both
+`BATTLEMETRICS_ACCESS_TOKEN` and `BATTLEMETRICS_SERVER_ID` are non-empty. It performs only bounded,
+read-only Server Get and Server Get Many requests, follows at most one validated next link, and performs
+one synthetic invalid-token check plus one synthetic missing-server check. It summarizes status,
+content type, structural key names, pagination form and target validity, safe numeric/rate/cache
+headers, timing, and normalized categories. It does not log authorization headers, token values,
+resource IDs, response bodies, full URLs, or resource values and is not run by normal tests or CI.
 
-Enter the token without putting its value in shell history:
+With an ignored, untracked, mode-`600` repository-local `.env`, run:
 
 ```sh
-read -rsp "BattleMetrics access token: " BATTLEMETRICS_ACCESS_TOKEN
-echo
-export BATTLEMETRICS_ACCESS_TOKEN
-pnpm run verify:live
-unset BATTLEMETRICS_ACCESS_TOKEN
+node --env-file=.env scripts/live-verify.mjs
 ```
 
-Use a subscribed test account and least-privilege token stored outside the repository. If later live
-work needs Server Get, require `BATTLEMETRICS_SERVER_ID` and an owner-approved, non-sensitive server ID.
-Never extend the harness to writes without a separate approved phase.
+Never print or inspect `.env` contents, redirect verifier output to a tracked path, or pass a token as a
+process argument. Use a subscribed test account, a least-privilege token, and an owner-approved server
+ID. Never extend the harness to writes without a separate approved phase.
 
 Before filtered collection reads, verify every query field in current first-party documentation and use
 synthetic search criteria and small limits. Before any moderation test,

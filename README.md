@@ -44,6 +44,7 @@ pnpm run format:check
 pnpm test
 pnpm run build
 pnpm pack --dry-run
+pnpm run test:package
 ```
 
 `pnpm run dev` starts the development environment provided by the official n8n node CLI. Compatibility
@@ -115,22 +116,23 @@ limits here.
 
 ## Opt-in live verification
 
-Normal tests and CI never contact BattleMetrics. The local verifier performs only `GET /servers`,
-requires an explicitly supplied `BATTLEMETRICS_ACCESS_TOKEN`, never prints it or response bodies, and
-reports only sanitized status, media type, envelope shape, pagination form, and relevant rate-limit
-headers. It is not included in normal tests or the published package.
+Normal tests and CI never contact BattleMetrics. The local verifier requires non-empty
+`BATTLEMETRICS_ACCESS_TOKEN` and `BATTLEMETRICS_SERVER_ID` values. It performs read-only Server Get and
+Server Get Many requests, follows at most one safe collection pagination link, and makes one bounded
+synthetic invalid-token check plus one bounded synthetic missing-server check. It never prints token or
+server-ID values, request headers, response bodies, resource values, or full URLs. Output is limited to
+sanitized status, media type, structural key names, pagination target validity, safe numeric/rate/cache
+headers, response timing, normalized failure categories, and pass/fail state. Normal tests exercise the
+sanitizer entirely offline, and neither the verifier nor its output is published in the package.
 
-To avoid placing the token value in shell history, enter it silently and remove it afterward:
+For a repository-local `.env` that is ignored, untracked, and mode `600`, run:
 
 ```sh
-read -rsp "BattleMetrics access token: " BATTLEMETRICS_ACCESS_TOKEN
-echo
-export BATTLEMETRICS_ACCESS_TOKEN
-pnpm run verify:live
-unset BATTLEMETRICS_ACCESS_TOKEN
+node --env-file=.env scripts/live-verify.mjs
 ```
 
-No owner credential was available during Phase 1A, so no live authenticated-success claim is made.
+Do not redirect verifier output into a tracked file. No subscribed authenticated-success claim is made
+until the complete structural verifier passes with an owner-provided eligible credential.
 
 ## Privacy and AI-tool safety
 

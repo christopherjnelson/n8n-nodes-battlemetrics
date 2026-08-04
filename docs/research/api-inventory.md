@@ -1,6 +1,7 @@
 # BattleMetrics API research inventory
 
-Research date: **2026-08-02**  
+Research dates: **2026-08-02**, reviewed **2026-08-04**
+
 Status: foundation decision record, not a claim that all listed endpoints are implemented
 
 ## Method and evidence quality
@@ -130,6 +131,27 @@ when they resolve to exactly `https://api.battlemetrics.com/servers` without URL
 preserves order, detects repeated links, enforces 100-page and 10,000-primary-item defaults, and can stop
 at a caller limit. Because next-link form is unresolved, these are client safety rules rather than
 claims about which link form BattleMetrics currently returns.
+
+### Server Get Many query classification (2026-08-04)
+
+The first-party developer explorer was queried again but remained unavailable to automated retrieval.
+Public BattleMetrics website list URLs use their own page and filter controls; those URLs are not REST
+API contract evidence. Without an accepted subscribed success observation, no parameter was promoted.
+
+| Potential parameter                         | Classification | Decision                                                                  |
+| ------------------------------------------- | -------------- | ------------------------------------------------------------------------- |
+| `page[size]`                                | Unresolved     | Previously probed only behind an authentication/subscription failure      |
+| `page[offset]` or another offset/cursor key | Unresolved     | Historical/community evidence is insufficient; follow returned links only |
+| Text search                                 | Unresolved     | Exact key, syntax, and matching behavior remain unavailable               |
+| Game                                        | Unresolved     | Exact key and accepted identifier format remain unavailable               |
+| Country / region                            | Unresolved     | Exact keys, formats, and combination behavior remain unavailable          |
+| Status                                      | Unresolved     | Exact key and accepted values remain unavailable                          |
+| Sorting                                     | Unresolved     | Fields, direction syntax, defaults, and stability remain unavailable      |
+| Includes                                    | Unresolved     | Allowed relationships and permission/cost effects remain unavailable      |
+| Sparse fieldsets                            | Unresolved     | Resource-specific field keys and semantics remain unavailable             |
+
+No Server Get Many API query parameter is implemented in this pass. Return All and Limit remain local
+n8n controls, and pagination remains driven exclusively by validated `links.next` values.
 
 ## Candidate endpoint inventory
 

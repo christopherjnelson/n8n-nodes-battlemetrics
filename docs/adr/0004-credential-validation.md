@@ -37,3 +37,11 @@ The foundation registered a credential-test function that made no request and al
 explaining the limitation. It did not fabricate success, but presenting an always-failing test button
 was not useful validation. Treating the anonymous subscription response as successful credential
 validation would be materially worse because no supplied credential was authenticated.
+
+## 2026-08-04 implementation review
+
+The decision remains unchanged. The opt-in verifier now requires both a token and Server ID, proves a
+credential only through successful subscribed Server requests, and separately checks one synthetic
+invalid token. Its safe category matrix distinguishes `401` invalid credential, subscription-specific
+`403`, other `403` permission denial, and `404` missing resource without printing response bodies or
+credential material.

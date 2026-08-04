@@ -13,6 +13,8 @@
 - [x] Credential prevalidation limitation accepted and documented in ADR 0004
 - [x] Conservative Server Get Many implemented without unverified query parameters
 - [x] Opt-in read-only live verifier fails closed and is excluded from CI
+- [x] Fully qualified codex metadata and supported categories verified in source, build, and package
+- [x] Temporary package regression gate verifies metadata, package contents, and compiled exports
 - [ ] Owner-provided subscribed live test completed
 - [ ] Explicit `0.1.0` operation set chosen; broader read matrix remains a roadmap
 - [ ] Repository and npm ownership established by the owner

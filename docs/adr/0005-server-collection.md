@@ -29,3 +29,9 @@ The UI display name is Get Many and its stable internal value is `getAll`. Limit
 page size; it trims primary resources locally and stops fetching once enough primary resources have
 been received. Search remains a deferred capability even though the phase is described as Get
 Many/Search.
+
+## 2026-08-04 review
+
+The first-party developer documentation remained inaccessible to automated retrieval. Public website
+server-list URLs were not treated as REST API documentation. No new query option was accepted without a
+successful subscribed structural verification, so the conservative decision remains unchanged.
