@@ -22,7 +22,7 @@ All notable changes to this project will be documented here.
 - An importable synthetic Player Get example workflow and privacy-focused diagnostics/tests.
 - Packed-artifact regressions for the allowlist, examples, metadata equality, exports, loadability,
   credential UX, runtime dependency count, sizes, and SHA-256.
-- A separate BattleMetrics Trigger and password-protected BattleMetrics Webhook credential for manually
+- A separate BattleMetrics Webhook Trigger and password-protected BattleMetrics Webhook credential for manually
   configured outbound webhooks.
 - Strict exact-byte HMAC-SHA256 verification, JSON/plain-text parsing after authentication, immediate
   acknowledgement, safe structured output, and fixed failure responses.
@@ -44,8 +44,11 @@ All notable changes to this project will be documented here.
 - Made Started Map the preferred deterministic automatic example, retained Server Action as the manual
   connectivity test, warned that Server Update can be extremely noisy, and stated explicitly that the
   n8n trigger does not poll.
-- Audited the `BattleMetrics Trigger` display name and recorded a pre-publication recommendation for a
-  future display-name-only change while preserving `battleMetricsTrigger`.
+- Renamed the user-facing trigger display name from `BattleMetrics Trigger` to
+  `BattleMetrics Webhook Trigger` while preserving `battleMetricsTrigger`, its codex identity, webhook
+  path behavior, credential identities, and existing workflow compatibility.
+- Replaced the built-in-only `Core Nodes` trigger category with the officially supported community-node
+  category `Development`.
 - Recorded the Phase 1F Ban List/Ban permission checkpoint and deferred all moderation reads because
   the current first-party contract, exact permissions, least-privilege token, and authorized targets
   were unavailable; no moderation request or operation was added.

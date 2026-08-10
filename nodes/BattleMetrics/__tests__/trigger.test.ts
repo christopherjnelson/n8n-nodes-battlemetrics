@@ -6,6 +6,7 @@ import { NodeConnectionTypes } from 'n8n-workflow';
 import { describe, expect, it, vi } from 'vitest';
 import { BattleMetricsWebhook } from '../../../credentials/BattleMetricsWebhook.credentials';
 import { BattleMetricsTrigger } from '../BattleMetricsTrigger.node';
+import triggerCodexMetadata from '../BattleMetricsTrigger.node.json';
 
 const timestamp = '2026-01-01T00:00:00.000Z';
 const secret = 'safe-unit-test-secret';
@@ -80,12 +81,12 @@ describe('BattleMetrics Webhook credential', () => {
 	});
 });
 
-describe('BattleMetrics Trigger metadata', () => {
+describe('BattleMetrics Webhook Trigger metadata', () => {
 	it('defines a manual, immediate POST trigger without AI-tool or lifecycle registration', () => {
 		const node = new BattleMetricsTrigger();
 		expect(node.constructor.name).toBe('BattleMetricsTrigger');
 		expect(node.description).toMatchObject({
-			displayName: 'BattleMetrics Trigger',
+			displayName: 'BattleMetrics Webhook Trigger',
 			name: 'battleMetricsTrigger',
 			group: ['trigger'],
 			version: 1,
@@ -115,9 +116,19 @@ describe('BattleMetrics Trigger metadata', () => {
 		expect(notice?.displayName).toContain('BattleMetrics RCON / Triggers');
 		expect(notice?.displayName).toContain('does not poll or register');
 	});
+
+	it('keeps the stable internal and codex identities with supported community categories', () => {
+		const node = new BattleMetricsTrigger();
+		expect(node.description.displayName).toBe('BattleMetrics Webhook Trigger');
+		expect(node.description.name).toBe('battleMetricsTrigger');
+		expect(triggerCodexMetadata.node).toBe('n8n-nodes-battlemetrics.battleMetricsTrigger');
+		expect(triggerCodexMetadata.categories).toEqual(['Development']);
+		expect(triggerCodexMetadata.categories).not.toContain('Core Nodes');
+		expect(triggerCodexMetadata.categories).not.toContain('Developer Tools');
+	});
 });
 
-describe('BattleMetrics Trigger webhook', () => {
+describe('BattleMetrics Webhook Trigger webhook', () => {
 	it.each([
 		['{"event":"server.update"}', 'application/json', { event: 'server.update' }],
 		['[1,2]', 'application/json; charset=utf-8', [1, 2]],

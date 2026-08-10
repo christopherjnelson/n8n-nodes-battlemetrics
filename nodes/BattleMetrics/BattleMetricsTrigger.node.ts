@@ -38,14 +38,14 @@ function rejectRequest(
 
 export class BattleMetricsTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'BattleMetrics Trigger',
+		displayName: 'BattleMetrics Webhook Trigger',
 		name: 'battleMetricsTrigger',
 		icon: { light: 'file:battleMetrics.svg', dark: 'file:battleMetrics.dark.svg' },
 		group: ['trigger'],
 		version: 1,
 		description: 'Receive and verify manually configured BattleMetrics webhooks (unofficial)',
 		subtitle: 'Signed webhook receiver',
-		defaults: { name: 'BattleMetrics Trigger' },
+		defaults: { name: 'BattleMetrics Webhook Trigger' },
 		inputs: [],
 		outputs: [NodeConnectionTypes.Main],
 		// eslint-disable-next-line n8n-nodes-base/node-class-description-credentials-name-unsuffixed -- This is a webhook credential, not an API credential.

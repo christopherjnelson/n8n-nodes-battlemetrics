@@ -51,6 +51,13 @@ function commandOutput(command, arguments_) {
 	}
 }
 
+function filesRecursively(directory) {
+	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+		const path = join(directory, entry.name);
+		return entry.isDirectory() ? filesRecursively(path) : [path];
+	});
+}
+
 try {
 	execFileSync('pnpm', ['run', 'build'], { cwd: repository, stdio: 'inherit' });
 	const sourceMetadata = jsonFile(join(repository, 'nodes/BattleMetrics/BattleMetrics.node.json'));
@@ -111,8 +118,7 @@ try {
 		'Packed trigger codex node is not fully qualified',
 	);
 	assert(
-		JSON.stringify(packedTriggerMetadata.categories) ===
-			JSON.stringify(['Core Nodes', 'Development']),
+		JSON.stringify(packedTriggerMetadata.categories) === JSON.stringify(['Development']),
 		'Packed trigger codex categories are not the supported expected values',
 	);
 	assert(packedTriggerMetadata.nodeVersion === '1.0', 'Packed trigger node version is not 1.0');
@@ -163,7 +169,7 @@ try {
 	);
 	assert(
 		!packedFiles.some((path) =>
-			/(^|\/)(?:\.env(?:\.|$)|coverage\/|\.git\/|__tests__\/|tests?\/|research\/|execution(?:s|-data|_data))/i.test(
+			/(^|\/)(?:\.env(?:\.|$)|coverage\/|\.git\/|__tests__\/|tests?\/|research\/|screenshots?\/|execution(?:s|-data|_data)|[^/]+\.(?:sqlite3?|db|png|jpe?g|webp)$)/i.test(
 				path,
 			),
 		),
@@ -172,6 +178,21 @@ try {
 
 	commandOutput('tar', ['-xzf', tarballPath, '-C', extractionDirectory]);
 	const extractedPackage = join(extractionDirectory, 'package');
+	const packedSecretPatterns = [
+		/BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY/,
+		/gh[pousr]_[A-Za-z0-9_]{20,}/,
+		/npm_[A-Za-z0-9]{20,}/,
+		/Authorization:\s*Bearer\s+[A-Za-z0-9_-]{12,}/i,
+		/https?:\/\/[^\s"']+\/(?:webhook|webhook-test)\/[A-Za-z0-9_-]{8,}/i,
+		/(?:rconPassword|RCON_PASSWORD|sharedSecret|accessToken)\s*[:=]\s*["'][^"']{12,}["']/,
+	];
+	for (const path of filesRecursively(extractedPackage)) {
+		const content = readFileSync(path, 'utf8');
+		assert(
+			!packedSecretPatterns.some((pattern) => pattern.test(content)),
+			'Packed artifact contains a generic credential, private key, or production webhook pattern',
+		);
+	}
 	const nodeModule = require(
 		join(extractedPackage, 'dist/nodes/BattleMetrics/BattleMetrics.node.js'),
 	);
@@ -205,7 +226,7 @@ try {
 	assert(node.description.usableAsTool === true, 'Packed node is not usable as an AI tool');
 	assert(trigger.description.version === 1, 'Packed trigger node type version is not 1');
 	assert(
-		trigger.description.displayName === 'BattleMetrics Trigger' &&
+		trigger.description.displayName === 'BattleMetrics Webhook Trigger' &&
 			trigger.description.name === 'battleMetricsTrigger',
 		'Packed trigger display or stable internal name changed unexpectedly',
 	);
@@ -341,6 +362,7 @@ try {
 			compiledCredentialLoad: true,
 			compiledTriggerLoad: true,
 			compiledWebhookCredentialLoad: true,
+			packedSecretScan: true,
 		}),
 	);
 } finally {

@@ -92,6 +92,15 @@ describe('example workflows', () => {
 		expect(serialized).toContain('does not poll');
 		expect(serialized).toContain('Server Update can be extremely noisy');
 		expect(serialized).toContain('Discord, Slack, Telegram, Email');
+		expect(serialized).toContain('Edit Fields');
+		expect(serialized).toContain('`text` and `verified`');
+		expect(example.nodes).toContainEqual(
+			expect.objectContaining({
+				name: 'BattleMetrics Webhook Trigger',
+				type: 'n8n-nodes-battlemetrics.battleMetricsTrigger',
+				typeVersion: 1,
+			}),
+		);
 	});
 
 	it.each(workflows)(

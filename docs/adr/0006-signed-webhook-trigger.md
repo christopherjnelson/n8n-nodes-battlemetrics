@@ -49,7 +49,7 @@ downstream completion. Direct failures use `getResponseObject()` to send a fixed
 
 ## Decision
 
-Create a separate `BattleMetrics Trigger` and `BattleMetrics Webhook` credential. Do not register or
+Create a separate `BattleMetrics Webhook Trigger` and `BattleMetrics Webhook` credential. Do not register or
 delete anything at BattleMetrics during activation; users paste n8n's URL into a BattleMetrics Webhook
 action. The node is a push receiver and never polls. Live setup showed that native server/game triggers
 are managed in BattleMetrics' RCON / Triggers product and, for the tested events, require an
@@ -113,8 +113,8 @@ and does not create the upstream native trigger. It would also distinguish the n
 BattleMetrics' own RCON trigger object. The costs are a longer canvas/search label, documentation and
 screenshot churn, and potential user confusion after adoption.
 
-Recommendation: make a display-name-only change to `BattleMetrics Webhook Trigger` before publication,
-in a separate explicitly approved phase, because clarity is most valuable before `0.1.0` establishes a
-user-facing name. Preserve the stable internal name `battleMetricsTrigger`, codex identity
-`n8n-nodes-battlemetrics.battleMetricsTrigger`, credential identity, webhook path behavior, and workflow
-compatibility. Phase 2B records the recommendation but does not rename the node.
+Phase 2C implemented the recommended display-name-only change to `BattleMetrics Webhook Trigger` before
+publication. The stable internal name `battleMetricsTrigger`, codex identity
+`n8n-nodes-battlemetrics.battleMetricsTrigger`, credential identity, webhook path behavior, and existing
+workflow compatibility remain unchanged. ADR 0007 records the final identity and codex-category
+decision.

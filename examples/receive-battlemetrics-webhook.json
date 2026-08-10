@@ -5,14 +5,14 @@
 		{
 			"parameters": {},
 			"id": "2a000000-0000-4000-8000-111111111111",
-			"name": "BattleMetrics Trigger",
+			"name": "BattleMetrics Webhook Trigger",
 			"type": "n8n-nodes-battlemetrics.battleMetricsTrigger",
 			"typeVersion": 1,
 			"position": [0, 0]
 		},
 		{
 			"parameters": {
-				"content": "## Manual webhook setup\nCreate a **BattleMetrics Webhook** credential with a high-entropy shared secret. Start listening and copy the Test URL, or activate this workflow and copy the Production URL. In BattleMetrics **RCON / Triggers**, use an owner-controlled, RCON-connected server and add a Webhook action with the matching URL and secret. Use **Server Action** for a manual connectivity test or **Started Map** for a deterministic automatic example. Server Update can be extremely noisy without filtering. The n8n node receives pushed events; it does not poll or register the upstream trigger. Connect the output to Discord, Slack, Telegram, Email, or another destination after configuring that service's credential locally. Never put secrets or destination credentials in the body or exported workflow."
+				"content": "## Manual webhook setup\nCreate a **BattleMetrics Webhook** credential with a high-entropy shared secret. Start listening and copy the Test URL, or activate this workflow and copy the Production URL. In BattleMetrics **RCON / Triggers**, use an owner-controlled, RCON-connected server and add a Webhook action with the matching URL and secret. Use **Server Action** for a manual connectivity test or **Started Map** for a deterministic automatic example. Server Update can be extremely noisy without filtering. The n8n node receives pushed events; it does not poll or register the upstream trigger. Optionally add Edit Fields to map the verified body into a small `text` and `verified` object, then connect Discord, Slack, Telegram, Email, or another destination after configuring that service's credential locally. Never put secrets or destination credentials in the body or exported workflow."
 			},
 			"id": "2a000000-0000-4000-8000-222222222222",
 			"name": "Setup notes",
