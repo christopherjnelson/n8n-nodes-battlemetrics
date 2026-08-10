@@ -61,6 +61,9 @@
 - [ ] npm package ownership established by the owner through the first authorized publication
 - [x] First-publication/bootstrap and Trusted Publisher requirements rechecked against current official
       npm documentation on 2026-08-10
+- [x] Empty `npm-release` GitHub environment restricted to `main` and future `v*` tags, with no secrets,
+      variables, reviewer lockout, or wait timer
+- [x] Manual-only Phase 3B-A release dry-run workflow prepared with no authentication or publication path
 
 ## Publication blockers
 
@@ -77,8 +80,16 @@ owner approval gates remain open. Live Return All is intentionally not an unboun
 bounded two-page live Limit run plus controlled pagination tests provide the safety evidence.
 
 This repository intentionally contains no publishing workflow, npm token, release secret, or functional
-release script.
+publication script. `.github/workflows/release.yml` is a manual, unauthenticated dry-run gate that can
+only validate and retain an artifact; it cannot publish, stage, or change a dist-tag.
 
-The required procedure is [the release process](release-process.md). Phase 3A may create the public
-GitHub repository and establish real CI/security/protection settings, but it must stop before npm
-publication unless separately authorized.
+Three open Dependabot alerts remain recorded rather than dismissed or overridden: high-severity
+transitive `nanoid` alerts #7 and #8, and medium-severity transitive `uuid` alert #4. They arise in the
+upstream n8n/build-test lockfile graph. This package does not directly import either library, its packed
+artifact contains neither dependency, and its npm manifest declares zero runtime dependencies. Recheck
+the upstream toolchain normally, but these findings do not add package-owned runtime code to `0.1.0`.
+
+The required procedure is [the release process](release-process.md). Phase 3B-A prepares and executes
+only the non-publishing artifact dry run. Phases 3B-B through 3B-E remain separate owner-approved gates
+for the immutable tag, first publication under `next`, registry verification, and eventual `latest`
+promotion plus Creator Portal submission.

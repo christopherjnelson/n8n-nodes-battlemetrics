@@ -51,7 +51,35 @@ Inspect every packed path rather than relying only on `package.json#files`. Veri
 
 Record the candidate commit, tarball filename, file count, sizes, SHA-256, test count, codex identities,
 categories, and runtime dependency count. Delete temporary tarballs and extractions after recording the
-results. Never run `npm publish` locally.
+results. The manual Phase 3B-A workflow is the sole exception: it retains the one validated tarball and
+its JSON manifest as a seven-day GitHub Actions artifact for owner inspection. Never run `npm publish`
+locally.
+
+## Controlled publication phases
+
+These phases are intentionally separate. Completion of one phase does not authorize the next:
+
+1. **Phase 3B-A — dry-run evidence:** create the empty `npm-release` GitHub environment and commit the
+   manual-only `.github/workflows/release.yml`. Its only accepted input is a true dry-run flag; it runs
+   from `main`, builds and validates one exact tarball, records its source commit and SHA-256, and uploads
+   the tarball plus manifest. It has no npm authentication and contains no publish, stage, or dist-tag
+   action.
+2. **Phase 3B-B — immutable tag:** only after checkpoint 1 approval, create and push annotated tag
+   `v0.1.0` peeled to the exact approved Phase 3B-A release commit. Do not move it.
+3. **Phase 3B-C — one-time first publication:** only after separate checkpoint 2 approval, temporarily
+   authorize the GitHub-hosted bootstrap path and publish `0.1.0` under `next`, never `latest`. Remove and
+   revoke bootstrap authentication immediately after the attempt.
+4. **Phase 3B-D — registry verification:** install the exact `0.1.0` registry artifact through `next`,
+   compare it with the approved candidate, and exercise the documented package checks. Publication alone
+   is not promotion approval.
+5. **Phase 3B-E — promotion and submission:** only after checkpoint 4 approval, move the verified version
+   to `latest`; only after checkpoint 5 approval, submit that exact artifact to the n8n Creator Portal.
+
+The `npm-release` environment initially permits only the protected `main` branch needed for Phase 3B-A
+and tag names matching `v*` for later immutable releases. It has no reviewers or timer because a required
+self-review could lock out the sole maintainer, and it has no secrets or variables in Phase 3B-A. Before
+adding any publication command or credential in Phase 3B-C, re-audit the environment, workflow source
+ref, effective permissions, and owner approval.
 
 ## Immutable release discipline
 
@@ -117,8 +145,8 @@ No publishing workflow is committed before the GitHub repository, environment, r
 exact workflow identity exist. When it is later added, review the rendered workflow and effective
 permissions before enabling it.
 
-Recheck these npm requirements immediately before Phase 3B because registry capabilities can change. Do
-not publish a placeholder package merely to reserve the name.
+Recheck these npm requirements immediately before each publication phase because registry capabilities
+can change. Do not publish a placeholder package merely to reserve the name.
 
 ## Creator Portal
 
