@@ -2,7 +2,8 @@
 
 ## Reporting
 
-Do not open a public issue for a vulnerability or credential exposure. Use the repository's private
+Do not open a public issue for a vulnerability or credential exposure.
+Use GitHub private vulnerability reporting through the repository's
 **Security → Report a vulnerability** form. If that form is unavailable, email the maintainer privately
 at `christopherjnelson@proton.me`. Use a minimal subject such as “n8n-nodes-battlemetrics security
 report,” omit secrets from the subject, and initially send only enough detail to establish a safe
