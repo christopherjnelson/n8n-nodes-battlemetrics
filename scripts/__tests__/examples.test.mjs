@@ -24,7 +24,7 @@ describe('example workflows', () => {
 
 	it.each(workflows)('$name has an importable workflow structure', ({ workflow }) => {
 		expect(workflow).toMatchObject({
-			id: expect.stringMatching(/^phase(?:1[cde]|2a)/),
+			id: expect.stringMatching(/^phase(?:1[cde]|2[ab])/),
 			active: false,
 			nodes: expect.any(Array),
 			connections: expect.any(Object),
@@ -80,6 +80,18 @@ describe('example workflows', () => {
 		const serialized = JSON.stringify(example);
 		expect(serialized).toContain('12345678901234567890');
 		expect(serialized).not.toContain('00000000000000000');
+	});
+
+	it('documents the safe push-only webhook demonstration', () => {
+		const example = workflows.find(
+			({ name }) => name === 'receive-battlemetrics-webhook.json',
+		)?.workflow;
+		const serialized = JSON.stringify(example);
+		expect(serialized).toContain('Started Map');
+		expect(serialized).toContain('Server Action');
+		expect(serialized).toContain('does not poll');
+		expect(serialized).toContain('Server Update can be extremely noisy');
+		expect(serialized).toContain('Discord, Slack, Telegram, Email');
 	});
 
 	it.each(workflows)(

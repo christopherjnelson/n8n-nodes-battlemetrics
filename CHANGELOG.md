@@ -28,15 +28,27 @@ All notable changes to this project will be documented here.
   acknowledgement, safe structured output, and fixed failure responses.
 - The public BattleMetrics signature known-answer vector plus parser, body, trigger, HTTP, output,
   credential, metadata, and package regressions.
-- An importable generic webhook receiver, documented Server Update and Player Join JSON templates, a
-  raw-body ADR, manual setup guide, and live-test handoff.
+- An importable generic webhook receiver, conservative Started Map, Server Action, and Player Join JSON
+  templates, a raw-body ADR, and a manual RCON / Triggers setup guide.
 
 ### Changed
 
+- Froze the proposed `0.1.0` surface to Server Get/Get Many, Game Get Many, Player Get, and the signed
+  generic webhook receiver; explicitly deferred broader reads, moderation, polling, websockets,
+  automatic trigger registration, and arbitrary/custom API calls.
+- Recorded real BattleMetrics-originated signed delivery for a manually invoked Server Action and two
+  automatic Started Map events, including HTTP 200, verified safe metadata/body output, and absence of
+  secret, signature, raw-body, Authorization, cookie, or full-header leakage.
+- Corrected webhook setup to the native RCON / Triggers product and documented the practical need for an
+  owner-controlled, BattleMetrics RCON-connected server plus relevant organization permissions.
+- Made Started Map the preferred deterministic automatic example, retained Server Action as the manual
+  connectivity test, warned that Server Update can be extremely noisy, and stated explicitly that the
+  n8n trigger does not poll.
+- Audited the `BattleMetrics Trigger` display name and recorded a pre-publication recommendation for a
+  future display-name-only change while preserving `battleMetricsTrigger`.
 - Recorded the Phase 1F Ban List/Ban permission checkpoint and deferred all moderation reads because
   the current first-party contract, exact permissions, least-privilege token, and authorized targets
   were unavailable; no moderation request or operation was added.
-
 - Removed the always-failing credential-test button; credentials are validated when operations run.
 - Classified invalid-token, subscription, permission, rate-limit, transport, and malformed-response
   failures without exposing credentials.

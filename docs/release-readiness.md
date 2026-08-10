@@ -29,29 +29,35 @@
 - [x] Exact raw-body HMAC known-answer and mutation regressions implemented
 - [x] Manual registration, retry/deduplication limits, safe templates, and output documented
 - [x] Exact Phase 2A tarball verified through Test and activated Production endpoints in disposable n8n
+- [x] Real BattleMetrics Server Action delivered one signed HTTP 200 Production webhook with safe output
+- [x] Real BattleMetrics Started Map delivered one signed HTTP 200 webhook for each of two deliberate
+      map changes without n8n polling or manual BattleMetrics action
+- [x] RCON / Triggers setup, controlled RCON-connected server requirement, relevant organization roles,
+      and manual Webhook action documented
+- [x] Started Map is the preferred deterministic automatic example; Server Action is the manual
+      connectivity test; noisy Server Update behavior is warned against
 - [x] Player diagnostics retain only structural key names and never enumerate or emit identity values
 - [x] Phase 1F Ban List/Ban reads stopped at the permission checkpoint; no moderation request or
       speculative operation was added
 - [x] Bounded live Limit matrix covers one page, the observed page boundary, and one safe page follow
 - [x] Runtime `NodeApiError.httpCode` classification is regression tested
 - [x] Light/dark icons rendered in n8n and inspected at 16, 20, and 24 pixels
-- [ ] Explicit `0.1.0` operation set chosen; broader read matrix remains a roadmap
-- [ ] Current first-party Ban List/Ban panels, exact read scopes, and organization permissions captured
-- [ ] Separate least-privilege moderation token and owner-controlled disposable read targets provided
+- [x] Explicit `0.1.0` functionality frozen; broader REST resources and all other triggers remain deferred
+- [x] Trigger display-name tradeoff recorded without changing `battleMetricsTrigger`
 - [ ] Repository and npm ownership established by the owner
 - [ ] Security private-reporting channel configured
 
 ## Publication blockers
 
-Do not publish `0.1.0` until each operation actually included in that release has a current first-party
-contract record, exact scope/permission mapping, mocked coverage, suitable safe live verification,
-documentation, and package-content review. The broader API-scope list is a roadmap, not a requirement to
-ship every read in `0.1.0`. Broader supported-version compatibility remains separate from the recorded
-Node.js 24.18.0 and n8n 2.30.6 packed-package check.
+Do not publish `0.1.0` until each included operation has sufficient contract evidence, mocked coverage,
+safe live verification where applicable, documentation, and package-content review. Player Search,
+Organizations, Ban List/Ban operations, moderation writes, polling, websockets, automatic trigger
+registration, and arbitrary/custom API calls are explicitly outside this release and do not block it.
+Broader supported-version compatibility remains separate from the recorded Node.js 24.18.0 and n8n
+2.30.6 packed-package check.
 
-The Server resource itself may be frozen after Phase 1C validation, but the package must not be called
-release-ready while the unchecked ownership, private-reporting, documentation-contract, and compatibility
-gates above remain open. Live Return All is intentionally not an unbounded publication gate; a bounded
+The product scope is frozen, but the package must not be called release-ready while the unchecked
+ownership, private-reporting, documentation-contract, and compatibility gates above remain open. Live Return All is intentionally not an unbounded publication gate; a bounded
 two-page live Limit run plus controlled pagination tests provide the safety evidence.
 
 This repository intentionally contains no publishing workflow, npm token, release secret, or functional

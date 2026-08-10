@@ -1,6 +1,6 @@
 # ADR 0001: Foundation-only programmatic action node
 
-- Status: Accepted for the foundation; Phase 1A extends only the existing Server resource
+- Status: Superseded in part by ADR 0002 and ADR 0006
 - Date: 2026-08-02
 
 ## Decision
@@ -11,8 +11,12 @@ reusable, typed foundations for later reads and writes without presenting unimpl
 the n8n UI.
 
 Use n8n's built-in authenticated HTTP helper and zero runtime dependencies. Fix the origin to
-`https://api.battlemetrics.com`. Do not add a trigger node, websocket client, arbitrary-request escape
-hatch, moderation writes, publication automation, or functional release command.
+`https://api.battlemetrics.com`. Do not add a websocket client, arbitrary-request escape hatch,
+moderation writes, publication automation, or functional release command.
+
+The original prohibition on a trigger node applied to the foundation phase. ADR 0006 later authorizes
+one separate signed generic webhook receiver. That receiver neither polls nor creates or manages a
+BattleMetrics trigger, and it does not broaden the REST action node.
 
 ## Rationale
 
@@ -28,3 +32,6 @@ permission before adding it. The package cannot publish through CI or an npm scr
 
 Phase 1A adds only Server Get Many under the same resource. It exposes no unverified API query
 parameters and does not alter the prohibition on other resources, writes, triggers, or publication.
+
+Later accepted ADRs supersede the last sentence only for the specifically documented Game Get Many,
+Player Get, and signed webhook receiver. All other triggers and publication automation remain deferred.

@@ -27,14 +27,15 @@ Get-by-ID, websocket support, arbitrary request operation, moderation
 write, or user-configurable API host.
 
 The package also includes a separate **BattleMetrics Trigger** for manually configured BattleMetrics
-outbound webhooks. It accepts the documented JSON and plain-text media types, verifies `X-Signature`
-against the exact raw request bytes, responds immediately after authentication, and emits a small safe
-wrapper. It does not register a webhook through the REST API or change a BattleMetrics trigger.
+outbound webhooks. It accepts `application/json` and `text/plain`, verifies `X-Signature` with
+HMAC-SHA256 against the exact raw request bytes, responds immediately after authentication and parsing,
+and emits a small safe wrapper. It does not poll, register a webhook through the REST API, or change a
+BattleMetrics trigger.
 
-The broader read list—Player Get Many/Search, Organization Get/Get Many, Ban List Get/Get
-Many, and Ban Get/Get Many—is a proposed roadmap, not a `0.1.0` promise. Every resource remains deferred
-until its current official method, parameters, permissions, and response contract can be re-verified.
-Ban create, update, and delete are not recommended for `0.1.0`.
+The proposed `0.1.0` functionality is frozen to those four actions and the signed generic webhook
+receiver. Player Get Many/Search, Organizations, Ban List/Ban operations, moderation writes, polling
+triggers, websocket behavior, automatic BattleMetrics trigger registration, and arbitrary/custom API
+calls are explicitly deferred.
 
 Phase 1F promoted no Ban List or Ban operation. The current first-party endpoint panels were blocked in
 this environment, the existing token has no optional moderation permissions, and no owner-controlled
@@ -106,10 +107,26 @@ access token and must not be put in the webhook URL or body. The credential has 
 authentication injection, proxy authentication, or generic Custom API Call.
 
 Add the trigger, create/select its credential, then copy n8n's Test URL while listening or its Production
-URL after activation. In BattleMetrics, manually create a personal trigger—or an organization trigger
-with **Use Trigger Webhooks**—and add a Webhook action with that URL, the same secret, a supported content
-type, and a body template. BattleMetrics does not expose the existing secret again, but allows a new one
-to be configured. It does not follow redirects and requires a publicly reachable URL.
+URL after activation. In BattleMetrics **RCON / Triggers**, select an owner-controlled,
+RCON-connected server, create the native trigger, and add a Webhook action with that URL, the same
+secret, a supported content type, and a body template. An arbitrary public BattleMetrics server ID is
+not sufficient for the tested native RCON events. Organization roles can separately control trigger
+management, viewing, exemptions, logs, and use of Webhook actions. BattleMetrics does not expose the
+existing secret again, but allows a new one to be configured. It does not follow redirects and requires
+a publicly reachable URL.
+
+Use **Server Action** as the deterministic manual connectivity test. Use the game-specific **Started
+Map** event as the preferred deterministic automatic demonstration where available. Avoid presenting
+**Server Update** as the default generic notification example: live testing found that frequent server
+updates made it extremely noisy without filtering.
+
+The conceptual notification workflow is:
+
+```text
+BattleMetrics native trigger
+  -> BattleMetrics Trigger
+  -> Discord / Slack / Telegram / Email / other n8n destination
+```
 
 See the complete [manual setup and safe templates](docs/battlemetrics-webhook-setup.md). The current
 first-party [webhook contract](https://learn.battlemetrics.com/article/47-webhooks) was reviewed on
@@ -126,6 +143,13 @@ retry timestamp semantics and such a cache would not be durable across n8n worke
 and optional `X-Request-ID` are emitted for downstream use. Duplicate delivery remains possible; use
 durable deduplication before non-idempotent effects. `X-Request-ID` and User-Agent are never treated as
 authentication.
+
+Phase 2B verified real BattleMetrics-originated signed delivery through the Production URL. One native
+Server Action produced one HTTP 200 delivery and one verified n8n execution. Two deliberate map changes
+on an RCON-connected Insurgency 2014 server each produced one automatic Started Map delivery and one
+verified execution, with no n8n polling. Outputs retained the configured JSON body plus safe verified,
+timestamp, request ID, and content-type metadata; they exposed no shared secret, signature header,
+raw-body duplicate, Authorization data, cookies, or full headers. Only sanitized findings are recorded.
 
 ### Permission status
 
@@ -198,7 +222,8 @@ Sanitized importable workflows are in [`examples/`](examples/README.md):
 - [`get-games.json`](examples/get-games.json) uses Manual Trigger and Game → Get Many with Return All
   disabled and Limit 10.
 - [`receive-battlemetrics-webhook.json`](examples/receive-battlemetrics-webhook.json) uses the signed
-  BattleMetrics Trigger with manual setup notes and no credential reference or payload.
+  BattleMetrics Trigger with Started Map and Server Action guidance and no credential reference,
+  payload, or third-party destination credential.
 
 The examples contain no credential ID, token, execution output, or real server or player data. After
 import, create or select the credential named by the example and replace synthetic IDs where applicable.

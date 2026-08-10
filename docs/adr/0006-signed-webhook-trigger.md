@@ -4,6 +4,7 @@
 - Date: 2026-08-04
 - BattleMetrics documentation reviewed: 2026-08-04
 - Runtime verified: n8n 2.30.6 on Node.js 24.18.0
+- Real BattleMetrics-originated delivery verified: Phase 2B
 
 ## Context
 
@@ -12,8 +13,10 @@ BattleMetrics documents outbound webhooks as manually configured HTTP `POST` act
 component and hexadecimal `s` component. The signature is HMAC-SHA256 over the timestamp, a literal
 period, and the request body. The body bytes must therefore remain unchanged. The User-Agent and
 `X-Request-ID` are not authentication. The first-party page recommends a quick 2xx response, uses a
-five-second timeout, does not follow redirects, and retries/backoffs after non-2xx responses. Personal
-webhooks are available to all users; organization webhooks require **Use Trigger Webhooks**.
+five-second timeout, does not follow redirects, and retries/backoffs after non-2xx responses. The
+first-party article describes personal webhooks as available to all users and organization webhooks as
+requiring **Use Trigger Webhooks**. That documentation statement does not remove the practical RCON and
+server-control requirements observed later for the tested native server/game triggers.
 
 Authoritative source: [BattleMetrics Webhooks](https://learn.battlemetrics.com/article/47-webhooks).
 The page reports “Last updated on February 6, 2024” and was re-read on the date above.
@@ -48,7 +51,9 @@ downstream completion. Direct failures use `getResponseObject()` to send a fixed
 
 Create a separate `BattleMetrics Trigger` and `BattleMetrics Webhook` credential. Do not register or
 delete anything at BattleMetrics during activation; users paste n8n's URL into a BattleMetrics Webhook
-action.
+action. The node is a push receiver and never polls. Live setup showed that native server/game triggers
+are managed in BattleMetrics' RCON / Triggers product and, for the tested events, require an
+owner-controlled server connected to BattleMetrics RCON; a public server ID alone is insufficient.
 
 Strictly accept one header with exactly one `t` and one `s`. Reject duplicates, arrays, unknown future
 components, invalid timestamps, non-hex signatures, wrong digest lengths, and internal whitespace.
@@ -82,3 +87,34 @@ appropriate to their n8n deployment.
 - Updating n8n requires a new exact-byte and immediate-response proof.
 - A future freshness policy needs first-party retry semantics and explicit user-facing compatibility
   controls; durable replay prevention requires shared storage and is outside this node.
+
+## Phase 2B real-origin verification
+
+Owner-run testing established real BattleMetrics-originated signed delivery through an activated n8n
+Production URL. One deliberately invoked native Server Action returned HTTP 200 and created one
+execution. Two deliberate map changes on an RCON-connected Insurgency 2014 server each caused the native
+Started Map trigger to send one automatic webhook, each returning HTTP 200 and creating one execution.
+No n8n polling or manual BattleMetrics action caused either automatic delivery.
+
+All three inspected outputs had `webhook.verified === true`, a signed timestamp, a BattleMetrics request
+ID, normalized `application/json` content type, and the configured JSON body. They contained no shared
+secret, signature header, raw-body duplicate, Authorization data, cookies, or full headers. Only this
+sanitized finding is recorded; no endpoint, server/RCON secret, live identifier, raw header set, or
+execution export is retained.
+
+Started Map is consequently the preferred deterministic automatic demonstration. Server Action is the
+recommended manual connectivity test. Server Update remains supported upstream but was extremely noisy
+in practical testing and should be used only with deliberate filtering.
+
+## Display-name audit
+
+`BattleMetrics Webhook Trigger` would more precisely communicate that the node receives a Webhook action
+and does not create the upstream native trigger. It would also distinguish the n8n node from
+BattleMetrics' own RCON trigger object. The costs are a longer canvas/search label, documentation and
+screenshot churn, and potential user confusion after adoption.
+
+Recommendation: make a display-name-only change to `BattleMetrics Webhook Trigger` before publication,
+in a separate explicitly approved phase, because clarity is most valuable before `0.1.0` establishes a
+user-facing name. Preserve the stable internal name `battleMetricsTrigger`, codex identity
+`n8n-nodes-battlemetrics.battleMetricsTrigger`, credential identity, webhook path behavior, and workflow
+compatibility. Phase 2B records the recommendation but does not rename the node.

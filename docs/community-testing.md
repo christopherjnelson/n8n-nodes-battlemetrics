@@ -79,7 +79,7 @@ and exact tarball were removed.
 
 ## Signed webhook trigger
 
-Phase 2A adds offline known-answer, exact-byte mutation, media-type, output-redaction, and webhook
+Phase 2A added offline known-answer, exact-byte mutation, media-type, output-redaction, and webhook
 boundary coverage. On 2026-08-04, the exact packed artifact was installed in a fresh localhost-only n8n
 2.30.6 profile. Its generic receiver example imported, the Test URL accepted signed JSON, and the active
 Production URL accepted signed JSON, Unicode text, and an empty text body. Production requests with an
@@ -91,8 +91,23 @@ webhook metadata; inspection found no shared secret, signature header, authoriza
 or raw-body duplicate. The disposable profile, database, logs, installed package, proof scripts, npm
 cache, extracted files, and tarball were deleted after the final artifact measurements were recorded.
 
-No real BattleMetrics trigger is created during this phase. The owner-only live handoff is documented in
-[the webhook setup guide](battlemetrics-webhook-setup.md).
+Phase 2B then completed owner-run, real BattleMetrics-originated verification. A native Server Action
+provided the deterministic manual connectivity check: BattleMetrics received HTTP 200 and n8n created
+exactly one verified execution. On an owner-controlled, BattleMetrics RCON-connected Insurgency 2014
+server, two deliberate map changes caused two native Started Map events; each produced one automatic
+HTTP 200 webhook and one verified execution without n8n polling or a manual BattleMetrics action.
+
+The inspected outputs contained the signed timestamp, BattleMetrics request ID, normalized
+`application/json` content type, and configured JSON body. They did not contain the shared secret,
+signature header, raw-body duplicate, Authorization data, cookies, or full headers. No live server ID,
+address, RCON password, webhook URL or secret, request ID, raw header set, or execution export was
+retained. Do not repeat external webhook testing unless a later phase explicitly requires it.
+
+Native trigger management was found under BattleMetrics RCON / Triggers. Practical setup required a
+server controlled by the user and connected to BattleMetrics RCON; an arbitrary public server ID was
+not enough. Started Map is the preferred deterministic automatic example, while Server Action remains
+the recommended manual test. Server Update was extremely noisy in live use and should not be used as a
+generic notification example without filtering. See [the webhook setup guide](battlemetrics-webhook-setup.md).
 
 Do not run live Return All merely to prove pagination: the collection can be large. The live Limit 11
 check is the bounded two-page proof; Return All termination, caps, ordering, included deduplication, and
