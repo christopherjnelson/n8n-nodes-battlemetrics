@@ -54,10 +54,13 @@
 - [x] Immutable tag/version, `next` candidate, intentional `latest` promotion, Trusted Publishing, first
       package bootstrap research, and five owner approval checkpoints documented
 - [x] Safe bug-report and pull-request templates prepared without a publishing workflow
-- [x] Interim private security email is usable before GitHub private vulnerability reporting exists
-- [ ] Repository and npm ownership established by the owner
-- [ ] GitHub private vulnerability reporting enabled after repository creation
-- [ ] First-publication/bootstrap and Trusted Publisher requirements rechecked against then-current npm
+- [x] GitHub private vulnerability reporting is enabled, with private maintainer email retained as a
+      fallback
+- [x] Public GitHub repository ownership, canonical `origin`, real CI, security controls, and `main`
+      protection established by the owner
+- [ ] npm package ownership established by the owner through the first authorized publication
+- [x] First-publication/bootstrap and Trusted Publisher requirements rechecked against current official
+      npm documentation on 2026-08-10
 
 ## Publication blockers
 
@@ -69,10 +72,9 @@ arbitrary Custom API Call support are explicitly outside this release and do not
 Node.js support is limited to the locally and CI-tested 22 and 24 majors. n8n end-to-end evidence is
 limited to 2.30.6 and 2.32.6; other n8n versions remain unverified rather than implicitly supported.
 
-The product scope is frozen, but the package must not be published while the repository/npm ownership,
-GitHub security configuration, first-publication/bootstrap research, and explicit owner approval gates
-remain open. Live Return All is intentionally not an unbounded publication gate; a bounded two-page live
-Limit run plus controlled pagination tests provide the safety evidence.
+The product scope is frozen, but the package must not be published while npm ownership and the explicit
+owner approval gates remain open. Live Return All is intentionally not an unbounded publication gate; a
+bounded two-page live Limit run plus controlled pagination tests provide the safety evidence.
 
 This repository intentionally contains no publishing workflow, npm token, release secret, or functional
 release script.

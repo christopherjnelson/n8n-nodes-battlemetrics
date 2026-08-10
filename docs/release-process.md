@@ -65,9 +65,11 @@ results. Never run `npm publish` locally.
 
 ## Candidate and dist-tag flow
 
-Publish an approved candidate under `next`, then test the exact registry artifact. Installation through
-the Creator Portal and default npm installation require a separate, intentional promotion to `latest`.
-Treat dist-tag changes as release actions even though they do not create a new package version.
+Publish an approved candidate under `next`, then test the exact registry artifact. For the first version,
+pass `--tag next`; npm otherwise assigns `latest` by default. Do not also assign `latest` during the
+bootstrap. Installation through the Creator Portal and default npm installation require a separate,
+intentional promotion to `latest`. Treat dist-tag changes as release actions even though they do not
+create a new package version.
 
 **Owner approval checkpoint 2:** stop before the first-package bootstrap or staged npm publication.
 
@@ -77,19 +79,46 @@ Treat dist-tag changes as release actions even though they do not create a new p
 
 ## Trusted publishing
 
-Use GitHub Actions OIDC with npm Trusted Publishing. Do not add a permanent npm-token fallback. The npm
-Trusted Publisher configuration must exactly match the GitHub repository owner, repository, workflow
-filename, and any selected environment; enter only the filename in npm's workflow field. The future
-workflow needs `id-token: write`, read-only repository contents, and an intentionally protected manual
-release path. Prefer npm staged publication with a separate owner 2FA approval.
+Research repeated on 2026-08-10 against current official npm documentation established this bootstrap
+boundary:
+
+- Trusted Publisher configuration is created from an existing package's npm settings. Because
+  `n8n-nodes-battlemetrics` has no package page yet, it cannot be configured before the first version.
+- [`npm stage publish`](https://docs.npmjs.com/staged-publishing/) explicitly requires an existing
+  registry package and cannot create a brand-new package.
+- The first version can originate from a GitHub-hosted Actions runner with provenance. npm documents
+  `id-token: write`, a public repository matching `package.json#repository`, and
+  `npm publish --provenance --access public` for a first publication.
+- That one bootstrap publication therefore needs temporary authentication. Use a granular access token
+  with the shortest available expiration, package/scope read-write access and no organization access,
+  and bypass 2FA as npm requires for non-interactive package creation. Because the unscoped package does
+  not exist yet and therefore cannot be selected individually, the bootstrap token may need temporary
+  **All Packages** access. Store it only as an environment-scoped GitHub Actions secret for the approved
+  manual run. Delete the Actions secret and revoke the npm token immediately after the run, whether the
+  run succeeds or fails.
+- Bootstrap with `npm publish --provenance --access public --tag next`. The explicit tag prevents npm's
+  default `latest` assignment. After registry-install testing, `latest` remains a separate owner-approved
+  dist-tag action.
+
+After the package exists, configure GitHub Actions OIDC with npm Trusted Publishing. Match the GitHub
+owner, repository, workflow filename, and protected environment exactly; enter only the filename in
+npm's workflow field. Allow `npm stage publish` but not direct `npm publish`, then set package publishing
+access to require 2FA and disallow traditional tokens. Future releases use a GitHub-hosted runner,
+`id-token: write`, read-only repository contents, `npm stage publish --tag next`, provenance generated
+automatically by trusted publishing, and separate owner 2FA approval.
+
+Official sources checked: [Trusted publishing](https://docs.npmjs.com/trusted-publishers/),
+[staged publishing](https://docs.npmjs.com/staged-publishing/),
+[provenance](https://docs.npmjs.com/generating-provenance-statements/),
+[granular access tokens](https://docs.npmjs.com/about-access-tokens/), and
+[dist-tags](https://docs.npmjs.com/cli/dist-tag/).
 
 No publishing workflow is committed before the GitHub repository, environment, required checks, and
 exact workflow identity exist. When it is later added, review the rendered workflow and effective
 permissions before enabling it.
 
-For the first public version, research npm's then-current package-bootstrap and Trusted Publisher
-requirements immediately before acting. Do not assume OIDC can create a package that does not yet exist,
-and do not publish a placeholder package merely to reserve the name.
+Recheck these npm requirements immediately before Phase 3B because registry capabilities can change. Do
+not publish a placeholder package merely to reserve the name.
 
 ## Creator Portal
 
