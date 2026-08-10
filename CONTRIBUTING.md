@@ -16,3 +16,6 @@ configured, and use owner-provided disposable resources described in `docs/commu
 
 Do not add publishing credentials or a functional publishing workflow. Security issues belong in the
 private channel described in `SECURITY.md`, not a public issue.
+
+Release work must follow [`docs/release-process.md`](docs/release-process.md). External release actions
+remain owner-approved steps and are not part of ordinary contributions.

@@ -3,9 +3,13 @@
 ## Reporting
 
 Do not open a public issue for a vulnerability or credential exposure. Until the proposed GitHub
-repository exists and a private vulnerability-reporting channel is configured, contact the maintainer
-through the private contact method on the maintainer's GitHub profile. If no private method is available,
-report only that private contact is needed; do not include exploit details or secrets publicly.
+repository exists, email the maintainer privately at `christopherjnelson@proton.me`. Use a minimal
+subject such as “n8n-nodes-battlemetrics security report,” omit secrets from the subject, and initially
+send only enough detail to establish a safe follow-up channel.
+
+After the public repository exists and GitHub private vulnerability reporting is enabled, this policy
+will direct reports to the repository's private **Security → Report a vulnerability** form. Do not treat
+a public issue, discussion, pull request, or commit as a private channel.
 
 Never send BattleMetrics tokens, cookies, private API responses, organization information, player
 identifiers, IP-derived data, notes, flags, or ban reasons. Revoke any exposed token immediately in the
@@ -18,7 +22,8 @@ retrieve the old value.
 
 ## Supported versions
 
-No production release exists. The unreleased `0.1.0` foundation receives best-effort security fixes.
+No production release exists. The unreleased `0.1.0` release candidate receives best-effort security
+fixes.
 
 ## Design boundaries
 

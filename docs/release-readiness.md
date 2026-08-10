@@ -14,6 +14,7 @@
 - [x] Conservative Server Get Many implemented without unverified query parameters
 - [x] Opt-in read-only live verifier fails closed and is excluded from CI
 - [x] Fully qualified codex metadata and supported categories verified in source, build, and package
+- [x] Trigger codex category corrected from built-in-only `Core Nodes` to supported `Development`
 - [x] Temporary package regression gate verifies metadata, package contents, and compiled exports
 - [x] Owner-provided Premium subscribed Server live test completed on 2026-08-04
 - [x] Bounded Premium subscribed Game Get Many live test completed on 2026-08-04
@@ -25,7 +26,7 @@
 - [x] Importable synthetic Server Get and Get Many examples included and regression tested
 - [x] Importable synthetic Game Get Many example included and regression tested
 - [x] Importable synthetic Player Get example included and regression tested
-- [x] Separate signed BattleMetrics Trigger and webhook-only credential implemented
+- [x] Separate signed BattleMetrics Webhook Trigger and webhook-only credential implemented
 - [x] Exact raw-body HMAC known-answer and mutation regressions implemented
 - [x] Manual registration, retry/deduplication limits, safe templates, and output documented
 - [x] Exact Phase 2A tarball verified through Test and activated Production endpoints in disposable n8n
@@ -43,22 +44,39 @@
 - [x] Runtime `NodeApiError.httpCode` classification is regression tested
 - [x] Light/dark icons rendered in n8n and inspected at 16, 20, and 24 pixels
 - [x] Explicit `0.1.0` functionality frozen; broader REST resources and all other triggers remain deferred
-- [x] Trigger display-name tradeoff recorded without changing `battleMetricsTrigger`
+- [x] Trigger display name clarified as BattleMetrics Webhook Trigger without changing
+      `battleMetricsTrigger`
+- [x] Stable trigger class, internal name, codex identity, credential identities, webhook path, and
+      example type reference regression tested
+- [x] Complete local release-candidate suite passed on Node.js 22.23.2 and 24.18.0
+- [x] n8n 2.30.6 isolated-package and n8n 2.32.6 real-webhook evidence recorded without broadening the
+      verified n8n range
+- [x] Immutable tag/version, `next` candidate, intentional `latest` promotion, Trusted Publishing, first
+      package bootstrap research, and five owner approval checkpoints documented
+- [x] Safe bug-report and pull-request templates prepared without a publishing workflow
+- [x] Interim private security email is usable before GitHub private vulnerability reporting exists
 - [ ] Repository and npm ownership established by the owner
-- [ ] Security private-reporting channel configured
+- [ ] GitHub private vulnerability reporting enabled after repository creation
+- [ ] First-publication/bootstrap and Trusted Publisher requirements rechecked against then-current npm
 
 ## Publication blockers
 
 Do not publish `0.1.0` until each included operation has sufficient contract evidence, mocked coverage,
-safe live verification where applicable, documentation, and package-content review. Player Search,
-Organizations, Ban List/Ban operations, moderation writes, polling, websockets, automatic trigger
-registration, and arbitrary/custom API calls are explicitly outside this release and do not block it.
-Broader supported-version compatibility remains separate from the recorded Node.js 24.18.0 and n8n
-2.30.6 packed-package check.
+safe live verification where applicable, documentation, and package-content review. Player Search/Get
+Many, Organization reads, Ban List/Ban reads and writes, Notes, Flags, moderation operations, RCON
+command execution from the action node, polling, websockets, automatic trigger registration, and
+arbitrary Custom API Call support are explicitly outside this release and do not block it.
+Node.js support is limited to the locally and CI-tested 22 and 24 majors. n8n end-to-end evidence is
+limited to 2.30.6 and 2.32.6; other n8n versions remain unverified rather than implicitly supported.
 
-The product scope is frozen, but the package must not be called release-ready while the unchecked
-ownership, private-reporting, documentation-contract, and compatibility gates above remain open. Live Return All is intentionally not an unbounded publication gate; a bounded
-two-page live Limit run plus controlled pagination tests provide the safety evidence.
+The product scope is frozen, but the package must not be published while the repository/npm ownership,
+GitHub security configuration, first-publication/bootstrap research, and explicit owner approval gates
+remain open. Live Return All is intentionally not an unbounded publication gate; a bounded two-page live
+Limit run plus controlled pagination tests provide the safety evidence.
 
 This repository intentionally contains no publishing workflow, npm token, release secret, or functional
 release script.
+
+The required procedure is [the release process](release-process.md). Phase 3A may create the public
+GitHub repository and establish real CI/security/protection settings, but it must stop before npm
+publication unless separately authorized.

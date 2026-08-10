@@ -1,0 +1,61 @@
+name: Bug report
+description: Report a reproducible problem without credentials or private BattleMetrics data
+title: 'bug: '
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not report vulnerabilities or credential exposure here. Follow SECURITY.md instead.
+        Never include tokens, webhook secrets, RCON credentials, private player/server data, raw responses, headers, or execution exports.
+  - type: input
+    id: n8n-version
+    attributes:
+      label: n8n version
+      placeholder: 2.x.x
+    validations:
+      required: true
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      placeholder: 22.x or 24.x
+    validations:
+      required: true
+  - type: dropdown
+    id: node
+    attributes:
+      label: Package node
+      options:
+        - BattleMetrics
+        - BattleMetrics Webhook Trigger
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Use synthetic or redacted values only.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Describe steps without attaching credentials, raw live responses, or execution exports.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy confirmation
+      options:
+        - label: I removed credentials, secrets, private identifiers, addresses, raw headers, live responses, and execution data.
+          required: true
