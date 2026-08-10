@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 const repository = resolve(import.meta.dirname, '../..');
 const packageJson = JSON.parse(readFileSync(resolve(repository, 'package.json'), 'utf8'));
 const ci = readFileSync(resolve(repository, '.github/workflows/ci.yml'), 'utf8');
+const release = readFileSync(resolve(repository, '.github/workflows/release.yml'), 'utf8');
 const releaseProcess = readFileSync(resolve(repository, 'docs/release-process.md'), 'utf8');
 const security = readFileSync(resolve(repository, 'SECURITY.md'), 'utf8');
 const triggerCodex = JSON.parse(
@@ -33,6 +34,19 @@ describe('release-candidate configuration', () => {
 		expect(ci).toContain('npm pack --dry-run');
 		expect(ci).not.toMatch(/npm publish|id-token:\s*write|workflow_dispatch|release:/);
 		expect(existsSync(resolve(repository, '.github/workflows/publish.yml'))).toBe(false);
+	});
+
+	it('keeps the release workflow manual, dry-run-only, and unauthenticated', () => {
+		expect(release).toContain('workflow_dispatch:');
+		expect(release).toContain('environment: npm-release');
+		expect(release).toContain('id-token: write');
+		expect(release).toContain('persist-credentials: false');
+		expect(release).toContain('NPM_CONFIG_USERCONFIG: /dev/null');
+		expect(release).toContain('release-manifest.json');
+		expect(release).toContain('retention-days: 7');
+		expect(release).not.toMatch(
+			/npm publish|npm stage|npm dist-tag|NPM_TOKEN|NODE_AUTH_TOKEN|registry-url/,
+		);
 	});
 
 	it('documents immutable releases and all owner approval checkpoints', () => {

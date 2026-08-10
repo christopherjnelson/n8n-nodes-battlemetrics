@@ -3,13 +3,33 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repository = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const temporaryDirectory = mkdtempSync(join(tmpdir(), 'battlemetrics-package-regression-'));
+const outputArgumentIndex = process.argv.indexOf('--output-directory');
+const manifestArgumentIndex = process.argv.indexOf('--manifest');
+const retainedOutputRequested = outputArgumentIndex !== -1 || manifestArgumentIndex !== -1;
+assertArgumentPair();
+const temporaryDirectory =
+	outputArgumentIndex === -1
+		? mkdtempSync(join(tmpdir(), 'battlemetrics-package-regression-'))
+		: resolve(repository, process.argv[outputArgumentIndex + 1]);
+const manifestPath =
+	manifestArgumentIndex === -1
+		? undefined
+		: resolve(repository, process.argv[manifestArgumentIndex + 1]);
+const npmCacheDirectory = mkdtempSync(join(tmpdir(), 'battlemetrics-package-npm-cache-'));
 const extractionDirectory = mkdtempSync(join(repository, '.package-regression-'));
 const require = createRequire(import.meta.url);
 const expectedCodexNode = 'n8n-nodes-battlemetrics.battleMetrics';
@@ -24,6 +44,18 @@ const expectedFilesAllowlist = [
 	'THIRD_PARTY_NOTICES.md',
 	'SECURITY.md',
 ];
+
+function assertArgumentPair() {
+	if (!retainedOutputRequested) return;
+	if (
+		outputArgumentIndex === -1 ||
+		manifestArgumentIndex === -1 ||
+		!process.argv[outputArgumentIndex + 1] ||
+		!process.argv[manifestArgumentIndex + 1]
+	) {
+		throw new Error('--output-directory and --manifest must be supplied together');
+	}
+}
 
 function jsonFile(path) {
 	return JSON.parse(readFileSync(path, 'utf8'));
@@ -59,6 +91,11 @@ function filesRecursively(directory) {
 }
 
 try {
+	mkdirSync(temporaryDirectory, { recursive: true });
+	assert(
+		!readdirSync(temporaryDirectory).some((name) => name.endsWith('.tgz')),
+		'Output directory already contains an npm tarball',
+	);
 	execFileSync('pnpm', ['run', 'build'], { cwd: repository, stdio: 'inherit' });
 	const sourceMetadata = jsonFile(join(repository, 'nodes/BattleMetrics/BattleMetrics.node.json'));
 	const compiledMetadata = jsonFile(
@@ -81,7 +118,7 @@ try {
 
 	execFileSync('npm', ['pack', '--pack-destination', temporaryDirectory], {
 		cwd: repository,
-		env: { ...process.env, npm_config_cache: join(temporaryDirectory, 'npm-cache') },
+		env: { ...process.env, npm_config_cache: npmCacheDirectory },
 		stdio: ['ignore', 'ignore', 'inherit'],
 	});
 	const tarballName = readdirSync(temporaryDirectory).find((name) => name.endsWith('.tgz'));
@@ -346,27 +383,56 @@ try {
 		0,
 	);
 	const sha256 = createHash('sha256').update(readFileSync(tarballPath)).digest('hex');
+	const packageResult = {
+		result: 'PASS',
+		packageName: packedPackage.name,
+		packageVersion: packedPackage.version,
+		tarballName,
+		packedFileCount: packedFiles.length,
+		compressedSize,
+		unpackedSize,
+		sha256,
+		codexNode: packedMetadata.node,
+		triggerCodexNode: packedTriggerMetadata.node,
+		codexCategories: packedMetadata.categories,
+		triggerCodexCategories: packedTriggerMetadata.categories,
+		compiledNodeLoad: true,
+		compiledCredentialLoad: true,
+		compiledTriggerLoad: true,
+		compiledWebhookCredentialLoad: true,
+		packedSecretScan: true,
+	};
 
-	console.log(
-		JSON.stringify({
-			result: 'PASS',
-			tarballName,
-			packedFileCount: packedFiles.length,
-			compressedSize,
-			unpackedSize,
-			sha256,
-			codexNode: packedMetadata.node,
-			triggerCodexNode: packedTriggerMetadata.node,
-			codexCategories: packedMetadata.categories,
-			triggerCodexCategories: packedTriggerMetadata.categories,
-			compiledNodeLoad: true,
-			compiledCredentialLoad: true,
-			compiledTriggerLoad: true,
-			compiledWebhookCredentialLoad: true,
-			packedSecretScan: true,
-		}),
-	);
+	if (manifestPath) {
+		const sourceCommit = process.env.RELEASE_SOURCE_COMMIT;
+		const testCount = Number.parseInt(process.env.RELEASE_TEST_COUNT ?? '', 10);
+		const nodeVersion = process.env.RELEASE_NODE_VERSION;
+		const npmVersion = process.env.RELEASE_NPM_VERSION;
+		const pnpmVersion = process.env.RELEASE_PNPM_VERSION;
+		assert(/^[0-9a-f]{40}$/.test(sourceCommit ?? ''), 'Release source commit is not a full SHA');
+		assert(Number.isSafeInteger(testCount) && testCount > 0, 'Release test count is invalid');
+		assert(/^v24\./.test(nodeVersion ?? ''), 'Release Node.js version is not a 24.x release');
+		assert(npmVersion === '11.16.0', 'Release npm version is not 11.16.0');
+		assert(pnpmVersion === '11.15.0', 'Release pnpm version is not 11.15.0');
+		assert(packedPackage.name === 'n8n-nodes-battlemetrics', 'Release package name changed');
+		assert(packedPackage.version === '0.1.0', 'Release package version changed');
+		const manifest = {
+			schemaVersion: 1,
+			...packageResult,
+			intendedTag: `v${packedPackage.version}`,
+			sourceCommit,
+			testCount,
+			runtimeDependencyCount: Object.keys(packedPackage.dependencies ?? {}).length,
+			nodeVersion,
+			npmVersion,
+			pnpmVersion,
+		};
+		writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, { flag: 'wx' });
+	}
+
+	console.log(JSON.stringify(packageResult));
 } finally {
-	rmSync(temporaryDirectory, { recursive: true, force: true });
+	if (!retainedOutputRequested) rmSync(temporaryDirectory, { recursive: true, force: true });
+	rmSync(npmCacheDirectory, { recursive: true, force: true });
 	rmSync(extractionDirectory, { recursive: true, force: true });
 }
