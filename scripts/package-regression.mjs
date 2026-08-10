@@ -79,12 +79,13 @@ try {
 		'Source and compiled trigger codex metadata differ',
 	);
 
-	execFileSync('pnpm', ['pack', '--pack-destination', temporaryDirectory], {
+	execFileSync('npm', ['pack', '--pack-destination', temporaryDirectory], {
 		cwd: repository,
+		env: { ...process.env, npm_config_cache: join(temporaryDirectory, 'npm-cache') },
 		stdio: ['ignore', 'ignore', 'inherit'],
 	});
 	const tarballName = readdirSync(temporaryDirectory).find((name) => name.endsWith('.tgz'));
-	assert(tarballName, 'pnpm pack did not report a tarball name');
+	assert(tarballName, 'npm pack did not create a tarball');
 	const tarballPath = join(temporaryDirectory, tarballName);
 	const packedFiles = commandOutput('tar', ['-tzf', tarballPath])
 		.trim()
