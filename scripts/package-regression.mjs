@@ -204,6 +204,11 @@ try {
 	assert(node.description.version === 1, 'Packed node type version is not 1');
 	assert(node.description.usableAsTool === true, 'Packed node is not usable as an AI tool');
 	assert(trigger.description.version === 1, 'Packed trigger node type version is not 1');
+	assert(
+		trigger.description.displayName === 'BattleMetrics Trigger' &&
+			trigger.description.name === 'battleMetricsTrigger',
+		'Packed trigger display or stable internal name changed unexpectedly',
+	);
 	assert(trigger.description.usableAsTool === undefined, 'Packed trigger is exposed as an AI tool');
 	assert(
 		trigger.description.credentials?.[0]?.name === 'battleMetricsWebhook',
@@ -331,6 +336,7 @@ try {
 			codexNode: packedMetadata.node,
 			triggerCodexNode: packedTriggerMetadata.node,
 			codexCategories: packedMetadata.categories,
+			triggerCodexCategories: packedTriggerMetadata.categories,
 			compiledNodeLoad: true,
 			compiledCredentialLoad: true,
 			compiledTriggerLoad: true,

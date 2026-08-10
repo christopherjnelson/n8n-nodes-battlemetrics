@@ -69,7 +69,7 @@ export class BattleMetricsTrigger implements INodeType {
 			},
 			{
 				displayName:
-					'Copy the Test or Production URL into a Webhook action on a BattleMetrics trigger, then use the same shared secret in BattleMetrics and this node credential. n8n does not register the webhook automatically.',
+					'In BattleMetrics RCON / Triggers, copy the Test or Production URL into a Webhook action and use the same shared secret in BattleMetrics and this node credential. This node receives pushed events; it does not poll or register the BattleMetrics trigger.',
 				name: 'setupNotice',
 				type: 'notice',
 				default: '',

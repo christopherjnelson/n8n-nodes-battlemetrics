@@ -111,6 +111,9 @@ describe('BattleMetrics Trigger metadata', () => {
 		expect(node.description.properties).toContainEqual(
 			expect.objectContaining({ name: 'options', type: 'hidden', default: { binaryData: true } }),
 		);
+		const notice = node.description.properties.find((property) => property.name === 'setupNotice');
+		expect(notice?.displayName).toContain('BattleMetrics RCON / Triggers');
+		expect(notice?.displayName).toContain('does not poll or register');
 	});
 });
 
