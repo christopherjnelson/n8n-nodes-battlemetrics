@@ -1,6 +1,6 @@
 # BattleMetrics webhook setup
 
-The BattleMetrics Trigger receives webhooks that you configure manually in BattleMetrics. It never
+The BattleMetrics Webhook Trigger receives webhooks that you configure manually in BattleMetrics. It never
 creates, changes, enables, disables, or deletes a BattleMetrics trigger, and it does not poll
 BattleMetrics. BattleMetrics evaluates its native trigger and sends the Webhook action to n8n.
 
@@ -13,7 +13,7 @@ organization role.
 
 ## Configure n8n and BattleMetrics
 
-1. Add **BattleMetrics Trigger** to an n8n workflow.
+1. Add **BattleMetrics Webhook Trigger** to an n8n workflow.
 2. Create a **BattleMetrics Webhook** credential and enter a high-entropy shared secret. This secret is
    separate from the REST access token.
 3. While testing, select **Listen for Test Event** and copy the Test URL. For ongoing use, activate the
@@ -31,11 +31,25 @@ The notification flow is:
 
 ```text
 BattleMetrics native trigger
-  -> BattleMetrics Trigger
+  -> BattleMetrics Webhook Trigger
   -> Discord / Slack / Telegram / Email / other n8n destination
 ```
 
 No third-party destination credential belongs in the BattleMetrics payload or an exported example.
+
+For a service-neutral notification, add an n8n **Edit Fields** node after the trigger and prepare a
+small object such as:
+
+```json
+{
+	"text": "BattleMetrics event: server.startedMap",
+	"verified": true
+}
+```
+
+Map `text` from only the body fields your own template guarantees, and map `verified` from
+`webhook.verified`. Then connect that object to any destination node. Keep Discord, Slack, Telegram,
+email, or other destination credentials in n8n; do not embed them in the payload or exported workflow.
 
 The URL must be publicly reachable by BattleMetrics and must not redirect. This project does not expose a
 local port or create a tunnel for you. BattleMetrics cannot reveal the existing shared secret later, but
@@ -60,6 +74,7 @@ produced one successful webhook without n8n polling or a manual BattleMetrics ac
 because BattleMetrics evaluated it on frequent server updates. Do not use it as the default generic
 notification example without narrow conditions. Other observed universal events included Player Join,
 Player Update, and Player Leave; available game-specific events depend on the game.
+Do not assume that every BattleMetrics plan or every game exposes the same trigger types.
 
 ## JSON templates
 

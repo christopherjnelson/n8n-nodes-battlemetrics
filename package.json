@@ -1,7 +1,7 @@
 {
 	"name": "n8n-nodes-battlemetrics",
 	"version": "0.1.0",
-	"description": "Unofficial n8n community node foundation for the BattleMetrics API",
+	"description": "Unofficial n8n community nodes for BattleMetrics API reads and signed webhooks",
 	"license": "MIT",
 	"homepage": "https://github.com/christopherjnelson/n8n-nodes-battlemetrics#readme",
 	"keywords": [
@@ -67,7 +67,7 @@
 		"n8n-workflow": "*"
 	},
 	"engines": {
-		"node": ">=22.0"
+		"node": "^22.0.0 || ^24.0.0"
 	},
 	"packageManager": "pnpm@11.15.0"
 }

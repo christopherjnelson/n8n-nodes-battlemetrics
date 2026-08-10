@@ -1,6 +1,6 @@
 # ADR 0002: Read-first `0.1.0` scope
 
-- Status: Accepted and frozen for proposed `0.1.0`
+- Status: Accepted and frozen for `0.1.0`
 - Date: 2026-08-02
 
 ## Frozen `0.1.0` functionality
@@ -13,7 +13,7 @@
    `text/plain`, verifying HMAC-SHA256 over the exact raw body, acknowledging immediately after
    authentication/parsing, and emitting safe webhook metadata
 
-This is the complete proposed `0.1.0` product boundary, not an incremental candidate list. Game Get Many
+This is the complete `0.1.0` product boundary, not an incremental candidate list. Game Get Many
 was promoted after bounded subscribed verification of `GET /games`; no other Game operation was added.
 Player Get was promoted after owner-approved bounded verification of `GET /players/{playerId}` and
 synthetic missing-player behavior. Player search and collection access remain deferred to prevent broad
@@ -32,8 +32,9 @@ scope and organization-permission names, and owner-controlled targets are availa
 ## Deferred
 
 Player Get Many/Search, Organizations, all Ban List/Ban reads and writes, moderation writes,
-player-identifier reads, notes, flags, activity/audit, arbitrary/custom API calls, automatic webhook
-registration, polling triggers, and websocket behavior are deferred. Phase 2A separately implements a
+player-identifier reads, notes, flags, activity/audit, RCON command execution from the action node,
+arbitrary Custom API Call support, automatic webhook registration, polling triggers, and websocket
+behavior are deferred. Phase 2A separately implements a
 manual outbound-webhook receiver under [ADR 0006](0006-signed-webhook-trigger.md); it adds no REST
 resource or BattleMetrics-side lifecycle call. It is configured manually in BattleMetrics RCON /
 Triggers and receives pushed Webhook actions; n8n performs no polling. Ban writes and player notes can

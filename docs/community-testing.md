@@ -109,6 +109,11 @@ not enough. Started Map is the preferred deterministic automatic example, while 
 the recommended manual test. Server Update was extremely noisy in live use and should not be used as a
 generic notification example without filtering. See [the webhook setup guide](battlemetrics-webhook-setup.md).
 
+The real publicly reachable deployment reported n8n 2.32.6. This is owner-provided environment evidence
+from the already completed verification, not a Phase 2C production inspection or compatibility claim
+for every n8n 2.x release. The earlier isolated packed-artifact checks used n8n 2.30.6 on Node.js
+24.18.0. See [the compatibility record](compatibility.md).
+
 Do not run live Return All merely to prove pagination: the collection can be large. The live Limit 11
 check is the bounded two-page proof; Return All termination, caps, ordering, included deduplication, and
 unsafe-link handling remain covered with controlled mocked responses.

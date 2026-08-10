@@ -6,7 +6,7 @@ Import any JSON file into n8n after installing `n8n-nodes-battlemetrics`.
 - `get-player.json` demonstrates Player → Get with a synthetic BattleMetrics Player ID.
 - `get-server.json` demonstrates Server → Get with a synthetic placeholder ID.
 - `get-servers.json` demonstrates Server → Get Many with Return All disabled and Limit 10.
-- `receive-battlemetrics-webhook.json` demonstrates the manually configured signed BattleMetrics Trigger,
+- `receive-battlemetrics-webhook.json` demonstrates the manually configured signed BattleMetrics Webhook Trigger,
   using Started Map as the preferred automatic example and Server Action as the manual connectivity test.
 
 No workflow contains a credential ID, access token, execution output, or real server or player data. Create a
@@ -21,4 +21,5 @@ Production URLs require an active workflow. Native setup is performed in BattleM
 against an owner-controlled, RCON-connected server. The n8n trigger does not poll or register the
 upstream trigger. Connect its output to Discord, Slack, Telegram, Email, or another destination only
 after adding that service's credential locally; exported examples must not contain destination
-credentials. Server Update can be extremely noisy without filtering.
+credentials. A service-neutral Edit Fields step can first map the verified event into a small `text`
+and `verified` object. Server Update can be extremely noisy without filtering.

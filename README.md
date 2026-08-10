@@ -1,6 +1,6 @@
 # n8n-nodes-battlemetrics
 
-An early-development, unofficial n8n community node for the BattleMetrics API. This project is not
+An unreleased, unofficial n8n community-node package for the BattleMetrics API and signed webhooks. This project is not
 affiliated with, endorsed by, or sponsored by BattleMetrics.
 
 [BattleMetrics](https://www.battlemetrics.com/) provides game-server monitoring, player history, and
@@ -26,16 +26,17 @@ boundary, and pagination contract are unresolved, so the node never enumerates p
 Get-by-ID, websocket support, arbitrary request operation, moderation
 write, or user-configurable API host.
 
-The package also includes a separate **BattleMetrics Trigger** for manually configured BattleMetrics
+The package also includes a separate **BattleMetrics Webhook Trigger** for manually configured BattleMetrics
 outbound webhooks. It accepts `application/json` and `text/plain`, verifies `X-Signature` with
 HMAC-SHA256 against the exact raw request bytes, responds immediately after authentication and parsing,
 and emits a small safe wrapper. It does not poll, register a webhook through the REST API, or change a
 BattleMetrics trigger.
 
-The proposed `0.1.0` functionality is frozen to those four actions and the signed generic webhook
-receiver. Player Get Many/Search, Organizations, Ban List/Ban operations, moderation writes, polling
-triggers, websocket behavior, automatic BattleMetrics trigger registration, and arbitrary/custom API
-calls are explicitly deferred.
+The `0.1.0` functionality is frozen to those four actions and the signed generic webhook
+receiver. Player Get Many/Search, Organization reads, Ban List/Ban reads and writes, Notes, Flags,
+moderation operations, RCON command execution from the action node, polling triggers, websocket
+behavior, automatic BattleMetrics trigger registration, and arbitrary Custom API Call support are
+explicitly deferred.
 
 Phase 1F promoted no Ban List or Ban operation. The current first-party endpoint panels were blocked in
 this environment, the existing token has no optional moderation permissions, and no owner-controlled
@@ -47,11 +48,12 @@ See [the API inventory](docs/research/api-inventory.md) and [the API scope ADR](
 
 ## Local development
 
-Requirements used for the current release-hardening pass:
+Verified release-candidate environments:
 
-- Node.js 24.18.0
+- Node.js 22.23.2 and 24.18.0 for the complete local validation/package suite
 - pnpm 11.15.0
-- n8n 2.30.6 for the isolated packed-package editor test
+- n8n 2.30.6 on Node.js 24.18.0 for isolated packed-package editor and webhook-boundary checks
+- n8n 2.32.6 for the real publicly reachable BattleMetrics-originated webhook verification
 
 ```sh
 pnpm install --frozen-lockfile
@@ -61,13 +63,16 @@ pnpm run lint
 pnpm run format:check
 pnpm test
 pnpm run build
-pnpm pack --dry-run
+npm pack --dry-run
 pnpm run test:package
 ```
 
-`pnpm run dev` starts the development environment provided by the official n8n node CLI. Compatibility
-outside the versions recorded above has not been established. The package declares Node.js 22 or newer
-because the current official scaffold supports modern maintained Node releases; CI checks Node 22 and 24.
+`pnpm run dev` starts the development environment provided by the official n8n node CLI. The supported
+Node.js majors are 22 and 24, expressed as `^22.0.0 || ^24.0.0`; both are exercised by CI and the Phase
+2C local release-candidate suite. Odd-numbered and future Node.js majors are not claimed. The
+`n8n-workflow: "*"` peer follows the official host-provided community-node pattern and prevents bundling
+a second runtime; it is not a claim that every n8n version is verified. End-to-end evidence is limited
+to n8n 2.30.6 and 2.32.6 as described above. Other n8n versions remain unverified.
 
 ## Authentication
 
@@ -99,7 +104,7 @@ No optional personal-access-token permissions were selected or required for the 
 Game, and Player checks. This is a direct observation for the tested token, not a universal scope or plan claim; other resources,
 organization roles, and future operations require separate verification.
 
-### BattleMetrics Trigger
+### BattleMetrics Webhook Trigger
 
 The trigger uses a separate **BattleMetrics Webhook** credential with one password-protected **Shared
 Secret** field. Use the same high-entropy value in BattleMetrics and n8n. It is not the BattleMetrics REST
@@ -118,13 +123,15 @@ a publicly reachable URL.
 Use **Server Action** as the deterministic manual connectivity test. Use the game-specific **Started
 Map** event as the preferred deterministic automatic demonstration where available. Avoid presenting
 **Server Update** as the default generic notification example: live testing found that frequent server
-updates made it extremely noisy without filtering.
+updates made it extremely noisy without filtering. Game-specific event types vary by game; Player Join,
+Player Leave, Player Update, and other native types may be available depending on the BattleMetrics and
+game configuration. Do not assume every BattleMetrics plan exposes identical trigger functionality.
 
 The conceptual notification workflow is:
 
 ```text
 BattleMetrics native trigger
-  -> BattleMetrics Trigger
+  -> BattleMetrics Webhook Trigger
   -> Discord / Slack / Telegram / Email / other n8n destination
 ```
 
@@ -222,7 +229,7 @@ Sanitized importable workflows are in [`examples/`](examples/README.md):
 - [`get-games.json`](examples/get-games.json) uses Manual Trigger and Game → Get Many with Return All
   disabled and Limit 10.
 - [`receive-battlemetrics-webhook.json`](examples/receive-battlemetrics-webhook.json) uses the signed
-  BattleMetrics Trigger with Started Map and Server Action guidance and no credential reference,
+  BattleMetrics Webhook Trigger with Started Map and Server Action guidance and no credential reference,
   payload, or third-party destination credential.
 
 The examples contain no credential ID, token, execution output, or real server or player data. After
@@ -290,7 +297,9 @@ them behind explicit human approval and narrow credentials; ambiguous autonomous
 - [Contributing](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 - [Community testing](docs/community-testing.md)
+- [Compatibility](docs/compatibility.md)
 - [Release readiness](docs/release-readiness.md)
+- [Release process](docs/release-process.md)
 - [Third-party notices](THIRD_PARTY_NOTICES.md)
 - [Changelog](CHANGELOG.md)
 
