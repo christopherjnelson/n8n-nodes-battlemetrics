@@ -92,4 +92,5 @@ the upstream toolchain normally, but these findings do not add package-owned run
 The required procedure is [the release process](release-process.md). Phase 3B-A prepares and executes
 only the non-publishing artifact dry run. Phases 3B-B through 3B-E remain separate owner-approved gates
 for the immutable tag, first publication under `next`, registry verification, and eventual `latest`
-promotion plus Creator Portal submission.
+promotion. Phase 3B-D specifically replaces one-time token bootstrap logic with Trusted Publishing;
+Creator Portal submission remains a fifth, separate owner checkpoint.

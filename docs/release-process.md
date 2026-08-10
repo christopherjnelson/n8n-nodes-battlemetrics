@@ -66,14 +66,20 @@ These phases are intentionally separate. Completion of one phase does not author
    action.
 2. **Phase 3B-B — immutable tag:** only after checkpoint 1 approval, create and push annotated tag
    `v0.1.0` peeled to the exact approved Phase 3B-A release commit. Do not move it.
-3. **Phase 3B-C — one-time first publication:** only after separate checkpoint 2 approval, temporarily
-   authorize the GitHub-hosted bootstrap path and publish `0.1.0` under `next`, never `latest`. Remove and
-   revoke bootstrap authentication immediately after the attempt.
-4. **Phase 3B-D — registry verification:** install the exact `0.1.0` registry artifact through `next`,
-   compare it with the approved candidate, and exercise the documented package checks. Publication alone
-   is not promotion approval.
-5. **Phase 3B-E — promotion and submission:** only after checkpoint 4 approval, move the verified version
-   to `latest`; only after checkpoint 5 approval, submit that exact artifact to the n8n Creator Portal.
+3. **Phase 3B-C — one-time first publication:** only after separate checkpoint 2 approval, create the
+   shortest-lived suitable granular bootstrap token, temporarily add it as `NPM_TOKEN` to `npm-release`,
+   and run the immutable-tag workflow. Publish the exact tarball with
+   `npm publish <tarball> --provenance --access public --tag next`, never `latest`; independently inspect
+   the registry before any retry. Delete the GitHub secret and revoke the token immediately after the
+   attempt.
+4. **Phase 3B-D — permanent Trusted Publisher transition:** after the package exists, configure npm
+   Trusted Publishing for exact workflow filename `release.yml` and exact environment `npm-release`,
+   permit staged publishing only, set package publishing access appropriately, and remove every bootstrap
+   token path. Future releases use staged publishing plus separate owner 2FA approval.
+5. **Phase 3B-E — registry test and promotion:** install and test the exact candidate through `next` and
+   compare it with the approved artifact. Only after checkpoint 4 approval, promote that tested version
+   to `latest` and verify the default npm install. Creator Portal submission remains separately protected
+   by checkpoint 5.
 
 The `npm-release` environment initially permits only the protected `main` branch needed for Phase 3B-A
 and tag names matching `v*` for later immutable releases. It has no reviewers or timer because a required
