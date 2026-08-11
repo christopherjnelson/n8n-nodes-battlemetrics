@@ -51,19 +51,13 @@
 - [x] Complete local release-candidate suite passed on Node.js 22.23.2 and 24.18.0
 - [x] n8n 2.30.6 isolated-package and n8n 2.32.6 real-webhook evidence recorded without broadening the
       verified n8n range
-- [x] Immutable tag/version, `next` candidate, intentional `latest` promotion, Trusted Publishing, first
-      package bootstrap research, and five owner approval checkpoints documented
+- [x] Manual GitHub and npm release process documented
 - [x] Safe bug-report and pull-request templates prepared without a publishing workflow
 - [x] GitHub private vulnerability reporting is enabled, with private maintainer email retained as a
       fallback
 - [x] Public GitHub repository ownership, canonical `origin`, real CI, security controls, and `main`
       protection established by the owner
 - [ ] npm package ownership established by the owner through the first authorized publication
-- [x] First-publication/bootstrap and Trusted Publisher requirements rechecked against current official
-      npm documentation on 2026-08-10
-- [x] Empty `npm-release` GitHub environment restricted to `main` and future `v*` tags, with no secrets,
-      variables, reviewer lockout, or wait timer
-- [x] Manual-only Phase 3B-A release dry-run workflow prepared with no authentication or publication path
 
 ## Publication blockers
 
@@ -75,13 +69,11 @@ arbitrary Custom API Call support are explicitly outside this release and do not
 Node.js support is limited to the locally and CI-tested 22 and 24 majors. n8n end-to-end evidence is
 limited to 2.30.6 and 2.32.6; other n8n versions remain unverified rather than implicitly supported.
 
-The product scope is frozen, but the package must not be published while npm ownership and the explicit
-owner approval gates remain open. Live Return All is intentionally not an unbounded publication gate; a
+The product scope is frozen. Live Return All is intentionally not an unbounded publication gate; a
 bounded two-page live Limit run plus controlled pagination tests provide the safety evidence.
 
 This repository intentionally contains no publishing workflow, npm token, release secret, or functional
-publication script. `.github/workflows/release.yml` is a manual, unauthenticated dry-run gate that can
-only validate and retain an artifact; it cannot publish, stage, or change a dist-tag.
+publication script. Releases are validated and published manually from a clean tagged checkout.
 
 Three open Dependabot alerts remain recorded rather than dismissed or overridden: high-severity
 transitive `nanoid` alerts #7 and #8, and medium-severity transitive `uuid` alert #4. They arise in the
@@ -89,8 +81,4 @@ upstream n8n/build-test lockfile graph. This package does not directly import ei
 artifact contains neither dependency, and its npm manifest declares zero runtime dependencies. Recheck
 the upstream toolchain normally, but these findings do not add package-owned runtime code to `0.1.0`.
 
-The required procedure is [the release process](release-process.md). Phase 3B-A prepares and executes
-only the non-publishing artifact dry run. Phases 3B-B through 3B-E remain separate owner-approved gates
-for the immutable tag, first publication under `next`, registry verification, and eventual `latest`
-promotion. Phase 3B-D specifically replaces one-time token bootstrap logic with Trusted Publishing;
-Creator Portal submission remains a fifth, separate owner checkpoint.
+The required procedure is [the release process](release-process.md).

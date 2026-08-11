@@ -20,8 +20,7 @@ retrieve the old value.
 
 ## Supported versions
 
-No production release exists. The unreleased `0.1.0` release candidate receives best-effort security
-fixes.
+The latest `0.1.x` release receives best-effort security fixes.
 
 ## Design boundaries
 

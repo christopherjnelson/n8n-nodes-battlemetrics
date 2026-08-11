@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 const repository = resolve(import.meta.dirname, '../..');
 const packageJson = JSON.parse(readFileSync(resolve(repository, 'package.json'), 'utf8'));
 const ci = readFileSync(resolve(repository, '.github/workflows/ci.yml'), 'utf8');
-const release = readFileSync(resolve(repository, '.github/workflows/release.yml'), 'utf8');
 const releaseProcess = readFileSync(resolve(repository, 'docs/release-process.md'), 'utf8');
 const security = readFileSync(resolve(repository, 'SECURITY.md'), 'utf8');
 const triggerCodex = JSON.parse(
@@ -13,6 +12,10 @@ const triggerCodex = JSON.parse(
 );
 
 describe('release-candidate configuration', () => {
+	it('publishes the initial package as 0.1.0', () => {
+		expect(packageJson.version).toBe('0.1.0');
+	});
+
 	it('supports only the locally and CI-tested Node.js majors', () => {
 		expect(packageJson.engines.node).toBe('^22.0.0 || ^24.0.0');
 		expect(ci).toContain('node-version: [22, 24]');
@@ -36,29 +39,15 @@ describe('release-candidate configuration', () => {
 		expect(existsSync(resolve(repository, '.github/workflows/publish.yml'))).toBe(false);
 	});
 
-	it('keeps the release workflow manual, dry-run-only, and unauthenticated', () => {
-		expect(release).toContain('workflow_dispatch:');
-		expect(release).toContain('environment: npm-release');
-		expect(release).toContain('id-token: write');
-		expect(release).toContain('persist-credentials: false');
-		expect(release).toContain('NPM_CONFIG_USERCONFIG: /dev/null');
-		expect(release).toContain('release-manifest.json');
-		expect(release).toContain('retention-days: 7');
-		expect(release).not.toMatch(
-			/npm publish|npm stage|npm dist-tag|NPM_TOKEN|NODE_AUTH_TOKEN|registry-url/,
-		);
+	it('does not publish from GitHub Actions', () => {
+		expect(existsSync(resolve(repository, '.github/workflows/release.yml'))).toBe(false);
 	});
 
-	it('documents immutable releases and all owner approval checkpoints', () => {
+	it('documents a direct manual release with immutable versions and tags', () => {
 		expect(releaseProcess).toContain('annotated `v<version>` tag');
-		expect(releaseProcess).toContain('never overwritten');
-		expect(releaseProcess).toMatch(/never move, delete\/recreate, or force-push/i);
-		expect(releaseProcess).toContain('under `next`');
-		expect(releaseProcess).toContain('promotion to `latest`');
-		expect(releaseProcess).toContain('GitHub Actions OIDC');
-		for (const checkpoint of [1, 2, 3, 4, 5]) {
-			expect(releaseProcess).toContain(`Owner approval checkpoint ${checkpoint}`);
-		}
+		expect(releaseProcess).toContain('npm publish --access public');
+		expect(releaseProcess).toContain('GitHub release');
+		expect(releaseProcess).toMatch(/never move or recreate a published tag/i);
 	});
 
 	it('provides an interim private report path and planned GitHub transition', () => {
