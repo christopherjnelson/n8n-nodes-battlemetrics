@@ -93,7 +93,7 @@ describe('package and node metadata', () => {
 			expect.arrayContaining([expect.objectContaining({ value: 'get' })]),
 		);
 		expect(playerOperation?.options).toEqual([
-			expect.objectContaining({ name: 'Get', value: 'get', action: 'Get a player' }),
+			expect.objectContaining({ name: 'Get', value: 'get', action: 'Get player' }),
 		]);
 		expect(node.description.properties).toEqual(
 			expect.arrayContaining([
@@ -212,7 +212,7 @@ describe('package and node metadata', () => {
 	it('has correct package metadata and exports', () => {
 		expect(packageJson).toMatchObject({
 			name: 'n8n-nodes-battlemetrics',
-			version: '0.1.0',
+			version: '0.1.1',
 			license: 'MIT',
 		});
 		expect(packageJson.n8n).toEqual(

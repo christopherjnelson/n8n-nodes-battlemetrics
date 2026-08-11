@@ -1,6 +1,6 @@
 # n8n-nodes-battlemetrics
 
-An unreleased, unofficial n8n community-node package for the BattleMetrics API and signed webhooks. This project is not
+An unofficial n8n community-node package for the BattleMetrics API and signed webhooks. This project is not
 affiliated with, endorsed by, or sponsored by BattleMetrics.
 
 [BattleMetrics](https://www.battlemetrics.com/) provides game-server monitoring, player history, and
@@ -46,6 +46,20 @@ owner-controlled test resources; do not broaden the existing development token m
 
 See [the API inventory](docs/research/api-inventory.md) and [the API scope ADR](docs/adr/0002-api-scope.md).
 
+## Installation
+
+In a self-hosted n8n instance, open **Settings → Community Nodes**, select **Install**, enter
+`n8n-nodes-battlemetrics`, accept the community-node risk notice, and install it. You can also install
+the package in a custom n8n environment with `npm install n8n-nodes-battlemetrics`.
+
+This package has not yet been verified for installation from the n8n Cloud community-node catalog.
+
+## Compatibility
+
+Node.js 22.22.0 or newer is required. The complete release suite has been exercised on Node.js 22.23.2
+and 24.18.0, and packed-package checks have been exercised with n8n 2.30.6 and 2.32.6. See the detailed
+[compatibility notes](docs/compatibility.md).
+
 ## Local development
 
 Verified release-candidate environments:
@@ -67,9 +81,9 @@ npm pack --dry-run
 pnpm run test:package
 ```
 
-`pnpm run dev` starts the development environment provided by the official n8n node CLI. The supported
-Node.js majors are 22 and 24, expressed as `^22.0.0 || ^24.0.0`; both are exercised by CI and the Phase
-2C local release-candidate suite. Odd-numbered and future Node.js majors are not claimed. The
+`pnpm run dev` starts the development environment provided by the official n8n node CLI. Node.js
+22.22.0 or newer is required, and the tested LTS majors 22 and 24 are exercised by CI and the Phase 2C
+local release-candidate suite. The
 `n8n-workflow: "*"` peer follows the official host-provided community-node pattern and prevents bundling
 a second runtime; it is not a claim that every n8n version is verified. End-to-end evidence is limited
 to n8n 2.30.6 and 2.32.6 as described above. Other n8n versions remain unverified.

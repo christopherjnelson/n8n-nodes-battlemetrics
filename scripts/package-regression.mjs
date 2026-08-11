@@ -415,7 +415,7 @@ try {
 		assert(npmVersion === '11.16.0', 'Release npm version is not 11.16.0');
 		assert(pnpmVersion === '11.15.0', 'Release pnpm version is not 11.15.0');
 		assert(packedPackage.name === 'n8n-nodes-battlemetrics', 'Release package name changed');
-		assert(packedPackage.version === '0.1.0', 'Release package version changed');
+		assert(packedPackage.version === '0.1.1', 'Release package version changed');
 		const manifest = {
 			schemaVersion: 1,
 			...packageResult,

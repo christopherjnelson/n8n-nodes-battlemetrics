@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented here.
 
+## 0.1.1 - 2026-08-10
+
+### Changed
+
+- Added GitHub Actions trusted publishing with npm provenance for n8n verification submissions.
+- Aligned the Node.js engine requirement and n8n node CLI with the current community-node scaffold.
+- Added installation and compatibility guidance for community-node users.
+- Simplified two operation action labels to follow the n8n UX guidelines.
+
 ## 0.1.0 - 2026-08-10
 
 ### Added

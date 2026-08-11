@@ -12,10 +12,9 @@ Compatibility claims are intentionally narrower than the peer dependency syntax.
 
 ## Supported and expected range
 
-`package.json#engines.node` supports the tested LTS majors with `^22.0.0 || ^24.0.0`. CI runs the full
-project suite on both majors. The current official n8n community-node starter requires Node.js 22 or
-higher; this package deliberately does not extend that statement into an untested claim for odd-numbered
-or future Node.js majors.
+`package.json#engines.node` follows the current official n8n minimum of Node.js 22.22.0. CI runs the full
+project suite on the tested LTS majors 22 and 24; the minimum locally verified Node.js release is
+22.23.2.
 
 The `n8n-workflow: "*"` peer dependency follows the host-provided community-node pattern: n8n supplies
 its own workflow runtime and the package must not bundle a competing copy. The wildcard is not evidence
@@ -23,7 +22,7 @@ that every historical or future n8n release has been tested.
 
 ## Unverified combinations
 
-- Node.js majors other than 22 and 24.
+- Node.js releases older than 22.22.0.
 - n8n releases other than the specifically exercised 2.30.6 and 2.32.6 versions.
 - Exact-byte webhook behavior after an n8n change to request-body parsing or webhook response handling.
 - Other operating systems, architectures, queue/worker topologies, and multi-worker replay behavior.

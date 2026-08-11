@@ -51,17 +51,19 @@
 - [x] Complete local release-candidate suite passed on Node.js 22.23.2 and 24.18.0
 - [x] n8n 2.30.6 isolated-package and n8n 2.32.6 real-webhook evidence recorded without broadening the
       verified n8n range
-- [x] Manual GitHub and npm release process documented
-- [x] Safe bug-report and pull-request templates prepared without a publishing workflow
+- [x] GitHub and npm provenance release process documented
+- [x] Safe bug-report and pull-request templates prepared
 - [x] GitHub private vulnerability reporting is enabled, with private maintainer email retained as a
       fallback
 - [x] Public GitHub repository ownership, canonical `origin`, real CI, security controls, and `main`
       protection established by the owner
-- [ ] npm package ownership established by the owner through the first authorized publication
+- [x] npm package ownership established by the owner through the first authorized publication
+- [x] Tag-only trusted publishing workflow added without an npm token or GitHub Environment
 
 ## Publication blockers
 
-Do not publish `0.1.0` until each included operation has sufficient contract evidence, mocked coverage,
+The `0.1.0` package was published manually. Publish `0.1.1` through the provenance workflow before an
+n8n verification submission. Each included operation has sufficient contract evidence, mocked coverage,
 safe live verification where applicable, documentation, and package-content review. Player Search/Get
 Many, Organization reads, Ban List/Ban reads and writes, Notes, Flags, moderation operations, RCON
 command execution from the action node, polling, websockets, automatic trigger registration, and
@@ -72,8 +74,8 @@ limited to 2.30.6 and 2.32.6; other n8n versions remain unverified rather than i
 The product scope is frozen. Live Return All is intentionally not an unbounded publication gate; a
 bounded two-page live Limit run plus controlled pagination tests provide the safety evidence.
 
-This repository intentionally contains no publishing workflow, npm token, release secret, or functional
-publication script. Releases are validated and published manually from a clean tagged checkout.
+The tag-only publishing workflow uses npm Trusted Publisher identity and contains no npm token or
+release secret. It validates and publishes from an immutable tagged checkout with provenance.
 
 Three open Dependabot alerts remain recorded rather than dismissed or overridden: high-severity
 transitive `nanoid` alerts #7 and #8, and medium-severity transitive `uuid` alert #4. They arise in the

@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-battlemetrics",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Unofficial n8n community nodes for BattleMetrics API reads and signed webhooks",
 	"license": "MIT",
 	"homepage": "https://github.com/christopherjnelson/n8n-nodes-battlemetrics#readme",
@@ -28,6 +28,9 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"prepublishOnly": "n8n-node prerelease",
+		"release": "n8n-node release",
 		"test": "vitest run",
 		"test:package": "node scripts/package-regression.mjs",
 		"typecheck": "tsc --noEmit --incremental false && tsc -p tsconfig.test.json",
@@ -56,10 +59,11 @@
 		]
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "0.41.2",
+		"@n8n/node-cli": "0.42.2",
 		"@types/node": "24.10.1",
 		"eslint": "9.32.0",
 		"prettier": "3.6.2",
+		"release-it": "^19.0.4",
 		"typescript": "5.9.2",
 		"vitest": "4.1.10"
 	},
@@ -67,7 +71,10 @@
 		"n8n-workflow": "*"
 	},
 	"engines": {
-		"node": "^22.0.0 || ^24.0.0"
+		"node": ">=22.22.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"packageManager": "pnpm@11.15.0"
 }

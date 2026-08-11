@@ -73,7 +73,7 @@ export class BattleMetrics implements INodeType {
 					{
 						name: 'Get',
 						value: 'get',
-						action: 'Get a player',
+						action: 'Get player',
 						description:
 							'Get one raw player envelope by its BattleMetrics Player ID. This does not search by display name or platform identifier. API access may require an eligible subscription; minimize retention and forwarding because returned profiles can contain personal information.',
 					},
@@ -107,7 +107,7 @@ export class BattleMetrics implements INodeType {
 					{
 						name: 'Get',
 						value: 'get',
-						action: 'Get a server',
+						action: 'Get server',
 						description:
 							'Get one raw server envelope by its BattleMetrics server ID. API access may require an eligible subscription.',
 					},
