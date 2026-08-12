@@ -80,14 +80,13 @@ conventions. No product functionality change is intended.
 - [x] Public GitHub repository ownership, canonical `origin`, real CI, security controls, and `main`
       protection established by the owner
 - [x] npm package ownership established by the owner through the first authorized publication
-- [x] Manual-dispatch, tag-bound staged publishing workflow added without an npm token
-- [x] Permanent workflow uses the `npm-release` environment and can only stage under `next`
+- [x] Proven tag-only Trusted Publisher workflow retained without an npm token or GitHub Environment
 
 ## Publication blockers
 
 The published `0.1.1` package predates the local Creator Portal fixes documented above. Release `0.1.2`
-must be explicitly approved, staged under `next`, reviewed with npm 2FA, tested, and separately approved
-for `latest`; Creator Portal resubmission remains later work. Each included operation has
+must be explicitly approved and published through the same Trusted Publisher path proven by `0.1.1`;
+Creator Portal resubmission remains later work. Each included operation has
 sufficient contract evidence, mocked coverage, safe live verification where applicable, documentation,
 and package-content review. Player Search/Get
 Many, Organization reads, Ban List/Ban reads and writes, Notes, Flags, moderation operations, RCON
@@ -99,9 +98,8 @@ limited to 2.30.6 and 2.32.6; other n8n versions remain unverified rather than i
 The product scope is frozen. Live Return All is intentionally not an unbounded publication gate; a
 bounded two-page live Limit run plus controlled pagination tests provide the safety evidence.
 
-The permanent workflow uses stage-only npm Trusted Publisher identity and contains no npm token or
-release secret. It validates an immutable tagged checkout, creates and inspects one exact tarball, and
-stages that tarball under `next` with provenance. It cannot publish directly or promote `latest`.
+The tag-only workflow uses npm Trusted Publisher identity and contains no npm token, release secret, or
+GitHub Environment. It validates and publishes from an immutable tagged checkout with provenance.
 
 Three open Dependabot alerts remain recorded rather than dismissed or overridden: high-severity
 transitive `nanoid` alerts #7 and #8, and medium-severity transitive `uuid` alert #4. They arise in the
