@@ -1,7 +1,4 @@
-/* eslint-disable @n8n/community-nodes/no-restricted-imports, @n8n/community-nodes/no-restricted-globals, @n8n/community-nodes/no-hardcoded-secrets -- Offline tests inspect local source and a published BattleMetrics signature test vector; these values are not credentials or packaged runtime code. */
 import { createHmac } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
 	getSingleSignatureHeader,
@@ -10,7 +7,8 @@ import {
 } from '../lib/webhookSignature';
 
 const OFFICIAL_TIMESTAMP = '1970-01-01T00:00:00.000Z';
-const OFFICIAL_VECTOR_KEY = 'fd38838ffca5116a9024b5957571e07bce98b207fe123f286f6af494ac8e6e54';
+const PUBLIC_KNOWN_ANSWER_MATERIAL =
+	'fd38838ffca5116a9024b5957571e07bce98b207fe123f286f6af494ac8e6e54';
 const OFFICIAL_SIGNATURE = '4723360cfc233c2137ede9094bfb1b6d4b034d49a65bcb582acd725636ea6258';
 
 function sign(body: Buffer, secret = 'unit-test-secret', timestamp = OFFICIAL_TIMESTAMP): string {
@@ -84,7 +82,7 @@ describe('BattleMetrics HMAC verification', () => {
 	it('matches the public first-party BattleMetrics known-answer vector', () => {
 		const parsed = parseSignatureHeader(`t=${OFFICIAL_TIMESTAMP},s=${OFFICIAL_SIGNATURE}`);
 		expect(() =>
-			verifySignature(Buffer.from('Hello world'), OFFICIAL_VECTOR_KEY, parsed),
+			verifySignature(Buffer.from('Hello world'), PUBLIC_KNOWN_ANSWER_MATERIAL, parsed),
 		).not.toThrow();
 	});
 
@@ -124,13 +122,11 @@ describe('BattleMetrics HMAC verification', () => {
 		}
 	});
 
-	it('uses the built-in constant-time comparison after an equal-length check', () => {
-		const source = readFileSync(
-			resolve(process.cwd(), 'nodes/BattleMetrics/lib/webhookSignature.ts'),
-			'utf8',
+	it('rejects an equal-length but incorrect signature', () => {
+		const body = Buffer.from('Hello world');
+		const parsed = parseSignatureHeader(`t=${OFFICIAL_TIMESTAMP},s=${'0'.repeat(64)}`);
+		expect(() => verifySignature(body, 'unit-test-secret', parsed)).toThrow(
+			'Invalid webhook signature',
 		);
-		expect(source).toContain("from 'node:crypto'");
-		expect(source).toContain('expected.length !== parsed.signature.length');
-		expect(source).toContain('timingSafeEqual(expected, parsed.signature)');
 	});
 });

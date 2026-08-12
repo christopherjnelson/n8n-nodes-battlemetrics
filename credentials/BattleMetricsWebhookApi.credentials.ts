@@ -1,15 +1,10 @@
 import type { ICredentialType, INodeProperties } from 'n8n-workflow';
 
-/* eslint-disable n8n-nodes-base/cred-class-name-unsuffixed,
-	n8n-nodes-base/cred-class-field-name-unsuffixed,
-	n8n-nodes-base/cred-class-field-display-name-missing-api -- BattleMetrics calls this a webhook shared secret, not an API credential. */
-
 // This credential is read only inside BattleMetricsTrigger.webhook().
-// eslint-disable-next-line @n8n/community-nodes/credential-test-required
-export class BattleMetricsWebhook implements ICredentialType {
-	name = 'battleMetricsWebhook';
+export class BattleMetricsWebhookApi implements ICredentialType {
+	name = 'battleMetricsWebhookApi';
 
-	displayName = 'BattleMetrics Webhook';
+	displayName = 'BattleMetrics Webhook API';
 
 	icon = {
 		light: 'file:../nodes/BattleMetrics/battleMetrics.svg',

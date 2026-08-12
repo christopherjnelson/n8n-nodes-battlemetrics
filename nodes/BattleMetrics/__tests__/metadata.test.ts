@@ -278,7 +278,7 @@ describe('package and node metadata', () => {
 				n8nNodesApiVersion: 1,
 				credentials: [
 					'dist/credentials/BattleMetricsApi.credentials.js',
-					'dist/credentials/BattleMetricsWebhook.credentials.js',
+					'dist/credentials/BattleMetricsWebhookApi.credentials.js',
 				],
 				nodes: [
 					'dist/nodes/BattleMetrics/BattleMetrics.node.js',

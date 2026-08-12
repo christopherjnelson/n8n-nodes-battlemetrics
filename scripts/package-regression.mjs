@@ -185,7 +185,7 @@ try {
 		JSON.stringify(packedPackage.n8n?.credentials) ===
 			JSON.stringify([
 				'dist/credentials/BattleMetricsApi.credentials.js',
-				'dist/credentials/BattleMetricsWebhook.credentials.js',
+				'dist/credentials/BattleMetricsWebhookApi.credentials.js',
 			]),
 		'Packed credential export is incorrect',
 	);
@@ -241,7 +241,7 @@ try {
 		join(extractedPackage, 'dist/nodes/BattleMetrics/BattleMetricsTrigger.node.js'),
 	);
 	const webhookCredentialModule = require(
-		join(extractedPackage, 'dist/credentials/BattleMetricsWebhook.credentials.js'),
+		join(extractedPackage, 'dist/credentials/BattleMetricsWebhookApi.credentials.js'),
 	);
 	assert(typeof nodeModule.BattleMetrics === 'function', 'Compiled node export does not load');
 	assert(
@@ -253,13 +253,13 @@ try {
 		'Compiled trigger export does not load',
 	);
 	assert(
-		typeof webhookCredentialModule.BattleMetricsWebhook === 'function',
+		typeof webhookCredentialModule.BattleMetricsWebhookApi === 'function',
 		'Compiled webhook credential export does not load',
 	);
 	const node = new nodeModule.BattleMetrics();
 	const credential = new credentialModule.BattleMetricsApi();
 	const trigger = new triggerModule.BattleMetricsTrigger();
-	const webhookCredential = new webhookCredentialModule.BattleMetricsWebhook();
+	const webhookCredential = new webhookCredentialModule.BattleMetricsWebhookApi();
 	assert(node.description.version === 1, 'Packed node type version is not 1');
 	assert(node.description.usableAsTool === true, 'Packed node is not usable as an AI tool');
 	assert(trigger.description.version === 1, 'Packed trigger node type version is not 1');
@@ -270,8 +270,19 @@ try {
 	);
 	assert(trigger.description.usableAsTool === undefined, 'Packed trigger is exposed as an AI tool');
 	assert(
-		trigger.description.credentials?.[0]?.name === 'battleMetricsWebhook',
+		trigger.description.credentials?.[0]?.name === 'battleMetricsWebhookApi' &&
+			trigger.description.credentials?.[0]?.testedBy === 'battleMetricsWebhookCredentialTest',
 		'Packed trigger credential is incorrect',
+	);
+	assert(
+		typeof trigger.methods?.credentialTest?.battleMetricsWebhookCredentialTest === 'function',
+		'Packed trigger local webhook credential test is missing',
+	);
+	assert(
+		['checkExists', 'create', 'delete'].every(
+			(method) => typeof trigger.webhookMethods?.default?.[method] === 'function',
+		),
+		'Packed trigger webhook lifecycle is incomplete',
 	);
 	assert(
 		trigger.description.webhooks?.[0]?.httpMethod === 'POST' &&
@@ -284,13 +295,17 @@ try {
 		'Packed credential display name is incorrect',
 	);
 	assert(
-		webhookCredential.name === 'battleMetricsWebhook' &&
-			webhookCredential.displayName === 'BattleMetrics Webhook',
+		webhookCredential.name === 'battleMetricsWebhookApi' &&
+			webhookCredential.displayName === 'BattleMetrics Webhook API',
 		'Packed webhook credential identity is incorrect',
 	);
 	assert(
 		webhookCredential.authenticate === undefined,
 		'Packed webhook credential enables proxy authentication',
+	);
+	assert(
+		webhookCredential.test === undefined,
+		'Packed webhook credential fabricates a remote request test',
 	);
 	assert(
 		webhookCredential.properties?.some(
@@ -309,6 +324,7 @@ try {
 		credential.test?.request?.method === 'GET' &&
 			credential.test.request.baseURL === 'https://api.battlemetrics.com' &&
 			credential.test.request.url === '/servers' &&
+			credential.test.request.headers?.Accept === 'application/vnd.api+json' &&
 			credential.test.request.headers?.Authorization === '=Bearer {{$credentials.accessToken}}',
 		'Packed API credential test request is missing or incorrect',
 	);

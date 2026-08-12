@@ -1,15 +1,27 @@
-/* eslint-disable n8n-nodes-base/node-filename-against-convention -- This is a test module, not a node implementation. */
-/* eslint-disable n8n-nodes-base/node-class-description-credentials-name-unsuffixed -- The tested credential is deliberately a webhook secret, not an API credential. */
 import { createHmac } from 'node:crypto';
-import type { IWebhookFunctions } from 'n8n-workflow';
+import type {
+	ICredentialsDecrypted,
+	ICredentialTestFunctions,
+	IHookFunctions,
+	INode,
+	IWebhookFunctions,
+} from 'n8n-workflow';
 import { NodeConnectionTypes } from 'n8n-workflow';
 import { describe, expect, it, vi } from 'vitest';
-import { BattleMetricsWebhook } from '../../../credentials/BattleMetricsWebhook.credentials';
+import { BattleMetricsWebhookApi } from '../../../credentials/BattleMetricsWebhookApi.credentials';
 import { BattleMetricsTrigger } from '../BattleMetricsTrigger.node';
 import triggerCodexMetadata from '../BattleMetricsTrigger.node.json';
 
 const timestamp = '2026-01-01T00:00:00.000Z';
 const secret = 'safe-unit-test-secret';
+const testNode: INode = {
+	id: 'synthetic-node-id',
+	parameters: {},
+	typeVersion: 1,
+	name: 'BattleMetrics Webhook Trigger',
+	type: 'n8n-nodes-battlemetrics.battleMetricsTrigger',
+	position: [0, 0],
+};
 
 function signature(body: Buffer, signingSecret = secret): string {
 	return createHmac('sha256', signingSecret)
@@ -54,6 +66,7 @@ function context(options: {
 		request,
 		response,
 		webhookContext: {
+			getNode: () => testNode,
 			getRequestObject: () => request,
 			getResponseObject: () => response,
 			getCredentials: vi.fn().mockResolvedValue({
@@ -64,10 +77,10 @@ function context(options: {
 }
 
 describe('BattleMetrics Webhook credential', () => {
-	it('is a separate required password field with no auth injection or test', () => {
-		const credential = new BattleMetricsWebhook();
-		expect(credential.name).toBe('battleMetricsWebhook');
-		expect(credential.displayName).toBe('BattleMetrics Webhook');
+	it('is a separate required password field with no authentication injection', () => {
+		const credential = new BattleMetricsWebhookApi();
+		expect(credential.name).toBe('battleMetricsWebhookApi');
+		expect(credential.displayName).toBe('BattleMetrics Webhook API');
 		expect(credential.properties).toContainEqual(
 			expect.objectContaining({
 				name: 'sharedSecret',
@@ -79,10 +92,48 @@ describe('BattleMetrics Webhook credential', () => {
 		expect(credential).not.toHaveProperty('authenticate');
 		expect(credential).not.toHaveProperty('test');
 	});
+
+	it.each([undefined, '', '   '])('rejects a missing or blank local secret (%j)', async (value) => {
+		const credential: ICredentialsDecrypted = {
+			id: 'synthetic-credential-id',
+			name: 'Synthetic Webhook Credential',
+			type: 'battleMetricsWebhookApi',
+			data: value === undefined ? {} : { sharedSecret: value },
+		};
+		const result =
+			await new BattleMetricsTrigger().methods.credentialTest.battleMetricsWebhookCredentialTest.call(
+				{} as ICredentialTestFunctions,
+				credential,
+			);
+		expect(result).toEqual({
+			status: 'Error',
+			message: 'A non-empty BattleMetrics webhook shared secret is required.',
+		});
+	});
+
+	it('truthfully confirms only local configuration for a non-empty secret', async () => {
+		const credential: ICredentialsDecrypted = {
+			id: 'synthetic-credential-id',
+			name: 'Synthetic Webhook Credential',
+			type: 'battleMetricsWebhookApi',
+			data: { sharedSecret: 'synthetic-local-fixture' },
+		};
+		const result =
+			await new BattleMetricsTrigger().methods.credentialTest.battleMetricsWebhookCredentialTest.call(
+				{} as ICredentialTestFunctions,
+				credential,
+			);
+		expect(result).toEqual({
+			status: 'OK',
+			message:
+				'Shared secret is configured. BattleMetrics verifies the matching secret when a signed webhook is received.',
+		});
+		expect(result.message).not.toMatch(/connection successful|registered|secret matches/i);
+	});
 });
 
 describe('BattleMetrics Webhook Trigger metadata', () => {
-	it('defines a manual, immediate POST trigger without AI-tool or lifecycle registration', () => {
+	it('defines a manual, immediate POST trigger with local lifecycle acknowledgements', () => {
 		const node = new BattleMetricsTrigger();
 		expect(node.constructor.name).toBe('BattleMetricsTrigger');
 		expect(node.description).toMatchObject({
@@ -92,7 +143,13 @@ describe('BattleMetrics Webhook Trigger metadata', () => {
 			version: 1,
 			inputs: [],
 			outputs: [NodeConnectionTypes.Main],
-			credentials: [{ name: 'battleMetricsWebhook', required: true }],
+			credentials: [
+				{
+					name: 'battleMetricsWebhookApi',
+					required: true,
+					testedBy: 'battleMetricsWebhookCredentialTest',
+				},
+			],
 			webhooks: [
 				{
 					name: 'default',
@@ -108,13 +165,33 @@ describe('BattleMetrics Webhook Trigger metadata', () => {
 			dark: 'file:battleMetrics.dark.svg',
 		});
 		expect(node.description).not.toHaveProperty('usableAsTool');
-		expect(node).not.toHaveProperty('webhookMethods');
+		expect(Object.keys(node.webhookMethods.default).sort()).toEqual([
+			'checkExists',
+			'create',
+			'delete',
+		]);
 		expect(node.description.properties).toContainEqual(
 			expect.objectContaining({ name: 'options', type: 'hidden', default: { binaryData: true } }),
 		);
 		const notice = node.description.properties.find((property) => property.name === 'setupNotice');
 		expect(notice?.displayName).toContain('BattleMetrics RCON / Triggers');
 		expect(notice?.displayName).toContain('does not poll or register');
+	});
+
+	it('acknowledges all lifecycle phases without making an API request', async () => {
+		const httpRequest = vi.fn();
+		const request = vi.fn();
+		const lifecycleContext = {
+			helpers: { httpRequest, request },
+			getNode: () => testNode,
+		} as unknown as IHookFunctions;
+		const methods = new BattleMetricsTrigger().webhookMethods.default;
+
+		await expect(methods.checkExists.call(lifecycleContext)).resolves.toBe(true);
+		await expect(methods.create.call(lifecycleContext)).resolves.toBe(true);
+		await expect(methods.delete.call(lifecycleContext)).resolves.toBe(true);
+		expect(httpRequest).not.toHaveBeenCalled();
+		expect(request).not.toHaveBeenCalled();
 	});
 
 	it('keeps the stable internal and codex identities with supported community categories', () => {
