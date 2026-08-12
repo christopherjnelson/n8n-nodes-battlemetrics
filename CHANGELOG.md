@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented here.
 
-## Unreleased
+## 0.1.2 - 2026-08-11
 
 ### Fixed
 
@@ -16,6 +16,8 @@ All notable changes to this project will be documented here.
   Webhook-action configuration and exposes no lifecycle API.
 - Replaced local webhook parsing failures with n8n `NodeOperationError` instances while preserving the
   existing fixed HTTP rejection responses and no-execution behavior.
+- This is a Creator Portal automated-review remediation release with no intended product functionality
+  change.
 
 ## 0.1.1 - 2026-08-10
 

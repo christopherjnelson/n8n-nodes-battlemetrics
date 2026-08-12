@@ -1,20 +1,23 @@
 # Release readiness
 
-## Creator Portal remediation (2026-08-11)
+## Creator Portal remediation release 0.1.2 (2026-08-11)
 
 The published `0.1.1` source produced 18 findings in
 `@n8n/scan-community-package` 0.32.0. After the REST credential-test correction,
 the local baseline was 17 findings. The current local source now returns `{ "passed": true }` from the
 scanner's exported `analyzePackage()` API using its exact `SOURCE_FILE_PATTERNS`—zero findings.
 
-The exact local `0.1.1` tarball was also installed in a disposable n8n 2.30.6 profile. Authenticated
+The exact remediation tarball was also installed in a disposable n8n 2.30.6 profile. Authenticated
 editor metadata exposed the intended action operations, REST credential test, renamed webhook
 credential, signed trigger webhook, and no Custom API Call. The local webhook credential test returned
 honest configured/empty results; signed JSON and text succeeded; invalid signature, malformed signed
 JSON, and unsupported media were rejected without executions; activation and deactivation completed
 without a remote BattleMetrics lifecycle request. The disposable profile was removed after the check.
 
-No version, tag, dist-tag, publication, or Creator Portal submission is part of this remediation pass.
+Version `0.1.2` packages these scanner-only corrections. It adds the REST API credential test, aligns
+the webhook credential with scanner naming and local-test rules, adds lifecycle acknowledgements per
+direct n8n staff guidance for manually registered upstream webhooks, and corrects n8n error/test
+conventions. No product functionality change is intended.
 
 ## Foundation gate
 
@@ -77,12 +80,14 @@ No version, tag, dist-tag, publication, or Creator Portal submission is part of 
 - [x] Public GitHub repository ownership, canonical `origin`, real CI, security controls, and `main`
       protection established by the owner
 - [x] npm package ownership established by the owner through the first authorized publication
-- [x] Tag-only trusted publishing workflow added without an npm token or GitHub Environment
+- [x] Manual-dispatch, tag-bound staged publishing workflow added without an npm token
+- [x] Permanent workflow uses the `npm-release` environment and can only stage under `next`
 
 ## Publication blockers
 
-The published `0.1.1` package predates the local Creator Portal fixes documented above. A future
-authorized release and Creator Portal resubmission remain separate work. Each included operation has
+The published `0.1.1` package predates the local Creator Portal fixes documented above. Release `0.1.2`
+must be explicitly approved, staged under `next`, reviewed with npm 2FA, tested, and separately approved
+for `latest`; Creator Portal resubmission remains later work. Each included operation has
 sufficient contract evidence, mocked coverage, safe live verification where applicable, documentation,
 and package-content review. Player Search/Get
 Many, Organization reads, Ban List/Ban reads and writes, Notes, Flags, moderation operations, RCON
@@ -94,8 +99,9 @@ limited to 2.30.6 and 2.32.6; other n8n versions remain unverified rather than i
 The product scope is frozen. Live Return All is intentionally not an unbounded publication gate; a
 bounded two-page live Limit run plus controlled pagination tests provide the safety evidence.
 
-The tag-only publishing workflow uses npm Trusted Publisher identity and contains no npm token or
-release secret. It validates and publishes from an immutable tagged checkout with provenance.
+The permanent workflow uses stage-only npm Trusted Publisher identity and contains no npm token or
+release secret. It validates an immutable tagged checkout, creates and inspects one exact tarball, and
+stages that tarball under `next` with provenance. It cannot publish directly or promote `latest`.
 
 Three open Dependabot alerts remain recorded rather than dismissed or overridden: high-severity
 transitive `nanoid` alerts #7 and #8, and medium-severity transitive `uuid` alert #4. They arise in the

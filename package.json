@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-battlemetrics",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Unofficial n8n community nodes for BattleMetrics API reads and signed webhooks",
 	"license": "MIT",
 	"homepage": "https://github.com/christopherjnelson/n8n-nodes-battlemetrics#readme",

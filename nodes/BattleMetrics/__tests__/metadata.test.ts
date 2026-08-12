@@ -270,7 +270,7 @@ describe('package and node metadata', () => {
 	it('has correct package metadata and exports', () => {
 		expect(packageJson).toMatchObject({
 			name: 'n8n-nodes-battlemetrics',
-			version: '0.1.1',
+			version: '0.1.2',
 			license: 'MIT',
 		});
 		expect(packageJson.n8n).toEqual(
