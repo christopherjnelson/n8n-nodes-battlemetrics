@@ -93,7 +93,7 @@ to n8n 2.30.6 and 2.32.6 as described above. Other n8n versions remain unverifie
 All operations require the **BattleMetrics API** credential. Store a BattleMetrics personal access
 token in its **Access Token** field. A personal access token may not be sufficient by itself: REST API
 access may also require an eligible BattleMetrics subscription. The credential adds
-`Authorization: Bearer …` through n8n's credential system. The token is never a node parameter, output
+`Authorization: Bearer …` through the node's fixed action transport. The token is never a node parameter, output
 field, log field, fixture, or error detail.
 
 The shared transport reads the credential and attaches the Bearer header itself. The credential does
@@ -120,10 +120,16 @@ organization roles, and future operations require separate verification.
 
 ### BattleMetrics Webhook Trigger
 
-The trigger uses a separate **BattleMetrics Webhook** credential with one password-protected **Shared
+The trigger uses a separate **BattleMetrics Webhook API** credential with one password-protected **Shared
 Secret** field. Use the same high-entropy value in BattleMetrics and n8n. It is not the BattleMetrics REST
-access token and must not be put in the webhook URL or body. The credential has no test button, HTTP
-authentication injection, proxy authentication, or generic Custom API Call.
+access token and must not be put in the webhook URL or body. Its n8n credential test checks only that a
+non-empty secret is configured locally; BattleMetrics verifies whether the secret matches when a signed
+webhook arrives. The credential has no outbound request test, HTTP authentication injection, proxy
+authentication, or generic Custom API Call.
+
+BattleMetrics requires manual upstream Webhook-action configuration and exposes no API to discover,
+create, or delete those actions. The trigger's n8n lifecycle hooks therefore acknowledge activation and
+deactivation locally without making an external request or claiming remote registration.
 
 Add the trigger, create/select its credential, then copy n8n's Test URL while listening or its Production
 URL after activation. In BattleMetrics **RCON / Triggers**, select an owner-controlled,

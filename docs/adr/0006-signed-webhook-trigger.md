@@ -27,7 +27,7 @@ An `INodeType` community trigger declares `webhooks` in its description and impl
 `webhook(this: IWebhookFunctions)`. A `path: 'webhook'` description gives the standard Test and
 Production URL treatment. Test registration exists only while the editor is listening; production
 registration exists for an active workflow. The credential is decrypted inside `webhook()` through
-`this.getCredentials('battleMetricsWebhook')`.
+`this.getCredentials('battleMetricsWebhookApi')`.
 
 n8n's `rawBodyReader` adds `readRawBody()` to the Express request. That method reads the incoming stream
 with the `raw-body` package and assigns a Node.js `Buffer` to `req.rawBody`. Its normal body parser later
@@ -49,9 +49,10 @@ downstream completion. Direct failures use `getResponseObject()` to send a fixed
 
 ## Decision
 
-Create a separate `BattleMetrics Webhook Trigger` and `BattleMetrics Webhook` credential. Do not register or
-delete anything at BattleMetrics during activation; users paste n8n's URL into a BattleMetrics Webhook
-action. The node is a push receiver and never polls. Live setup showed that native server/game triggers
+Create a separate `BattleMetrics Webhook Trigger` and `BattleMetrics Webhook API` credential. Users paste
+n8n's URL into a BattleMetrics Webhook action. BattleMetrics exposes no webhook lifecycle API, so
+`checkExists`, `create`, and `delete` intentionally return true as local n8n lifecycle acknowledgements;
+they make no HTTP request and do not claim remote registration. The node is a push receiver and never polls. Live setup showed that native server/game triggers
 are managed in BattleMetrics' RCON / Triggers product and, for the tested events, require an
 owner-controlled server connected to BattleMetrics RCON; a public server ID alone is insufficient.
 
@@ -115,6 +116,6 @@ screenshot churn, and potential user confusion after adoption.
 
 Phase 2C implemented the recommended display-name-only change to `BattleMetrics Webhook Trigger` before
 publication. The stable internal name `battleMetricsTrigger`, codex identity
-`n8n-nodes-battlemetrics.battleMetricsTrigger`, credential identity, webhook path behavior, and existing
+`n8n-nodes-battlemetrics.battleMetricsTrigger`, webhook path behavior, and existing
 workflow compatibility remain unchanged. ADR 0007 records the final identity and codex-category
 decision.

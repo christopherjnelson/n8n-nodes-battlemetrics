@@ -46,3 +46,11 @@ smallest semantically suitable correction using the current official community-n
 - Source, compiled, and packed codex metadata must remain semantically identical.
 - Regression tests must pin the display name, internal name, codex identity, supported category, and
   example type reference independently.
+
+## 2026-08-11 scanner amendment
+
+The node identity remains unchanged. Before Creator Portal verification and with no recorded installs,
+the webhook credential was renamed from `battleMetricsWebhook` / **BattleMetrics Webhook** to
+`battleMetricsWebhookApi` / **BattleMetrics Webhook API** to satisfy current credential naming rules.
+This narrow credential-reference correction does not change the trigger's serialized node type, codex
+identity, webhook path, or signature behavior.

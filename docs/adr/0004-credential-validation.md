@@ -43,9 +43,11 @@ legitimate credential test endpoint. n8n's declarative credential test API accep
 fails non-2xx responses by default, so no `authenticate` property is needed. Explicit `401` and `403`
 rules provide useful messages without including credential material.
 
-The separate webhook shared-secret credential remains unchanged. It authenticates inbound payloads and
-has no independent outbound verification endpoint, so adding a fabricated request test or a test that
-only checks whether the field is populated would not verify the secret.
+The separate webhook shared-secret credential has no independent outbound verification endpoint, so it
+must not define a fabricated request test. Current scanner rules accept a node-level `testedBy` method.
+That method truthfully validates only that the shared secret is a non-empty string and states that
+BattleMetrics verifies the matching value when a signed webhook arrives. It does not claim remote
+matching, connectivity, or registration.
 
 ## Previously rejected alternative
 

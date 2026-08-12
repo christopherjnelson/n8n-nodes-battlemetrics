@@ -15,7 +15,7 @@ needed. API access depends on an eligible BattleMetrics subscription. Player out
 information; minimize retention and forwarding and never post raw responses in issues.
 
 The webhook example contains no shared secret, credential ID, real payload, or downstream delivery
-credential. Create a separate BattleMetrics Webhook credential, then follow the
+credential. Create a separate BattleMetrics Webhook API credential, then follow the
 [manual setup guide](../docs/battlemetrics-webhook-setup.md). Test URLs require n8n to be listening;
 Production URLs require an active workflow. Native setup is performed in BattleMetrics RCON / Triggers
 against an owner-controlled, RCON-connected server. The n8n trigger does not poll or register the

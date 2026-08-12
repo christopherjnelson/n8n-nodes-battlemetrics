@@ -14,7 +14,7 @@ organization role.
 ## Configure n8n and BattleMetrics
 
 1. Add **BattleMetrics Webhook Trigger** to an n8n workflow.
-2. Create a **BattleMetrics Webhook** credential and enter a high-entropy shared secret. This secret is
+2. Create a **BattleMetrics Webhook API** credential and enter a high-entropy shared secret. This secret is
    separate from the REST access token.
 3. While testing, select **Listen for Test Event** and copy the Test URL. For ongoing use, activate the
    workflow and copy the Production URL.
@@ -26,6 +26,11 @@ organization role.
 6. Enable the BattleMetrics trigger/webhook. Test URLs work only while n8n is listening; Production URLs
    work only while the workflow is active.
 7. Connect the trigger output to Discord, Slack, Telegram, email, or another n8n destination as needed.
+
+The credential test confirms only that a non-empty shared secret is configured in n8n. BattleMetrics
+verifies the matching secret only when it sends a signed webhook. Likewise, activation and deactivation
+are acknowledged locally because BattleMetrics has no API for webhook lifecycle management; no remote
+Webhook action is created, discovered, or deleted by n8n.
 
 The notification flow is:
 

@@ -1,5 +1,21 @@
 # Release readiness
 
+## Creator Portal remediation (2026-08-11)
+
+The published `0.1.1` source produced 18 findings in
+`@n8n/scan-community-package` 0.32.0. After the REST credential-test correction,
+the local baseline was 17 findings. The current local source now returns `{ "passed": true }` from the
+scanner's exported `analyzePackage()` API using its exact `SOURCE_FILE_PATTERNS`—zero findings.
+
+The exact local `0.1.1` tarball was also installed in a disposable n8n 2.30.6 profile. Authenticated
+editor metadata exposed the intended action operations, REST credential test, renamed webhook
+credential, signed trigger webhook, and no Custom API Call. The local webhook credential test returned
+honest configured/empty results; signed JSON and text succeeded; invalid signature, malformed signed
+JSON, and unsupported media were rejected without executions; activation and deactivation completed
+without a remote BattleMetrics lifecycle request. The disposable profile was removed after the check.
+
+No version, tag, dist-tag, publication, or Creator Portal submission is part of this remediation pass.
+
 ## Foundation gate
 
 - [x] Official current n8n CLI scaffold inspected
@@ -10,7 +26,7 @@
 - [x] Original light/dark icon composition with MIT attribution
 - [x] Non-publishing CI
 - [ ] Official API documentation gaps resolved
-- [x] Credential prevalidation limitation accepted and documented in ADR 0004
+- [x] Read-only REST credential test and webhook local-validation boundary documented in ADR 0004
 - [x] Conservative Server Get Many implemented without unverified query parameters
 - [x] Opt-in read-only live verifier fails closed and is excluded from CI
 - [x] Fully qualified codex metadata and supported categories verified in source, build, and package
@@ -27,6 +43,8 @@
 - [x] Importable synthetic Game Get Many example included and regression tested
 - [x] Importable synthetic Player Get example included and regression tested
 - [x] Separate signed BattleMetrics Webhook Trigger and webhook-only credential implemented
+- [x] Manual-only webhook lifecycle acknowledged locally without external registration requests
+- [x] Current beta community-package scanner reports zero local-source findings
 - [x] Exact raw-body HMAC known-answer and mutation regressions implemented
 - [x] Manual registration, retry/deduplication limits, safe templates, and output documented
 - [x] Exact Phase 2A tarball verified through Test and activated Production endpoints in disposable n8n
@@ -46,8 +64,9 @@
 - [x] Explicit `0.1.0` functionality frozen; broader REST resources and all other triggers remain deferred
 - [x] Trigger display name clarified as BattleMetrics Webhook Trigger without changing
       `battleMetricsTrigger`
-- [x] Stable trigger class, internal name, codex identity, credential identities, webhook path, and
+- [x] Stable trigger class, internal name, codex identity, webhook path, and
       example type reference regression tested
+- [x] Pre-verification webhook credential rename to `battleMetricsWebhookApi` regression tested
 - [x] Complete local release-candidate suite passed on Node.js 22.23.2 and 24.18.0
 - [x] n8n 2.30.6 isolated-package and n8n 2.32.6 real-webhook evidence recorded without broadening the
       verified n8n range
@@ -62,9 +81,10 @@
 
 ## Publication blockers
 
-The `0.1.0` package was published manually. Publish `0.1.1` through the provenance workflow before an
-n8n verification submission. Each included operation has sufficient contract evidence, mocked coverage,
-safe live verification where applicable, documentation, and package-content review. Player Search/Get
+The published `0.1.1` package predates the local Creator Portal fixes documented above. A future
+authorized release and Creator Portal resubmission remain separate work. Each included operation has
+sufficient contract evidence, mocked coverage, safe live verification where applicable, documentation,
+and package-content review. Player Search/Get
 Many, Organization reads, Ban List/Ban reads and writes, Notes, Flags, moderation operations, RCON
 command execution from the action node, polling, websockets, automatic trigger registration, and
 arbitrary Custom API Call support are explicitly outside this release and do not block it.

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented here.
 
+## Unreleased
+
+### Fixed
+
+- Added a read-only `GET /servers` n8n credential test for the REST API credential with safe `401` and
+  `403` messages, without enabling generic credential proxy authentication.
+- Renamed the pre-verification webhook credential to **BattleMetrics Webhook API**
+  (`battleMetricsWebhookApi`) for current community-scanner compatibility.
+- Added an honest node-level webhook credential test that validates only a non-empty local shared
+  secret and does not claim remote matching or registration.
+- Completed the n8n webhook lifecycle with local acknowledgements because BattleMetrics requires manual
+  Webhook-action configuration and exposes no lifecycle API.
+- Replaced local webhook parsing failures with n8n `NodeOperationError` instances while preserving the
+  existing fixed HTTP rejection responses and no-execution behavior.
+
 ## 0.1.1 - 2026-08-10
 
 ### Changed
