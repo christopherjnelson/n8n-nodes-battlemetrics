@@ -48,8 +48,66 @@ describe('package and node metadata', () => {
 				}),
 			]),
 		);
-		expect(credential.properties[0]?.description).toContain('cannot prevalidate');
+		expect(credential.properties[0]?.description).toContain('connection test');
 		expect(credential.properties[0]?.description).toContain('eligible BattleMetrics subscription');
+	});
+
+	it('tests the credential against the read-only server collection with its stored token', () => {
+		expect(credential.test).toEqual({
+			request: {
+				method: 'GET',
+				baseURL: 'https://api.battlemetrics.com',
+				url: '/servers',
+				headers: {
+					Accept: 'application/vnd.api+json',
+					Authorization: '=Bearer {{$credentials.accessToken}}',
+				},
+			},
+			rules: [
+				expect.objectContaining({
+					type: 'responseCode',
+					properties: expect.objectContaining({ value: 401 }),
+				}),
+				expect.objectContaining({
+					type: 'responseCode',
+					properties: expect.objectContaining({ value: 403 }),
+				}),
+			],
+		});
+	});
+
+	it('fails invalid, expired, subscription, and permission states without exposing the token', () => {
+		const storedToken = 'synthetic-super-secret-token';
+		const authorizationTemplate = credential.test?.request.headers?.Authorization;
+		expect(typeof authorizationTemplate).toBe('string');
+		expect(
+			String(authorizationTemplate)
+				.replace('{{$credentials.accessToken}}', storedToken)
+				.replace(/^=/, ''),
+		).toBe(`Bearer ${storedToken}`);
+
+		const serializedTest = JSON.stringify(credential.test);
+		expect(serializedTest).not.toContain(storedToken);
+		expect(credential.test?.rules).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					properties: {
+						value: 401,
+						message: 'The BattleMetrics access token is invalid or expired.',
+					},
+				}),
+				expect.objectContaining({
+					properties: {
+						value: 403,
+						message:
+							'BattleMetrics denied API access. An eligible subscription and sufficient permissions are required.',
+					},
+				}),
+			]),
+		);
+		expect(credential.test?.rules).not.toEqual(
+			expect.arrayContaining([expect.objectContaining({ properties: { value: 200 } })]),
+		);
 	});
 
 	it('keeps the credential non-proxy so n8n cannot inject an arbitrary API call', () => {
@@ -59,7 +117,7 @@ describe('package and node metadata', () => {
 		).toBe(false);
 	});
 
-	it('does not register a misleading credential test', () => {
+	it('keeps credential testing declarative and out of the action node', () => {
 		expect(node.description.credentials?.[0]).not.toHaveProperty('testedBy');
 		expect(
 			(node as unknown as { methods?: { credentialTest?: unknown } }).methods?.credentialTest,

@@ -107,12 +107,12 @@ operations and protect the token like a password. The official documentation pag
 automated access during the 2026-08-02 research pass, so labels and available permissions must be
 checked in the live developer UI before use.
 
-The credential intentionally has no network test button. n8n cannot reliably prevalidate all token,
-subscription, scope, and resource-permission states, so the required secret is validated when an
-operation runs. Current safe observation distinguishes an invalid Bearer token (`401`) from the
-subscription-required response (`403`). On 2026-08-04, a subscribed owner token successfully completed
-Server Get, Server Get Many, Game Get Many, and owner-approved Player Get with `200` responses. A subscription response is never presented as
-successful credential validation.
+The credential connection test sends an authenticated, read-only `GET /servers` request. It succeeds
+only on a 2xx response, reports an invalid or expired token for `401`, and reports subscription or
+permission requirements for `403`. The test proves access to that endpoint, not every resource or
+operation. On 2026-08-04, a subscribed owner token successfully completed Server Get, Server Get Many,
+Game Get Many, and owner-approved Player Get with `200` responses. A subscription response is never
+presented as successful credential validation.
 
 No optional personal-access-token permissions were selected or required for the subscribed Server,
 Game, and Player checks. This is a direct observation for the tested token, not a universal scope or plan claim; other resources,

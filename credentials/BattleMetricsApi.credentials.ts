@@ -1,7 +1,5 @@
-import type { ICredentialType, INodeProperties } from 'n8n-workflow';
+import type { ICredentialTestRequest, ICredentialType, INodeProperties } from 'n8n-workflow';
 
-// A network test cannot distinguish all credential/subscription states; see ADR 0004.
-// eslint-disable-next-line @n8n/community-nodes/credential-test-required
 export class BattleMetricsApi implements ICredentialType {
 	name = 'battleMetricsApi';
 
@@ -23,7 +21,36 @@ export class BattleMetricsApi implements ICredentialType {
 			default: '',
 			required: true,
 			description:
-				'A BattleMetrics personal access token. A token may not include REST API access without an eligible BattleMetrics subscription. n8n cannot prevalidate this reliably, so the credential is validated when an operation runs. It is stored only in n8n credentials.',
+				'A BattleMetrics personal access token. The connection test verifies access to the read-only server directory; other resources may require additional permissions or an eligible BattleMetrics subscription. It is stored only in n8n credentials.',
 		},
 	];
+
+	test: ICredentialTestRequest = {
+		request: {
+			method: 'GET',
+			baseURL: 'https://api.battlemetrics.com',
+			url: '/servers',
+			headers: {
+				Accept: 'application/vnd.api+json',
+				Authorization: '=Bearer {{$credentials.accessToken}}',
+			},
+		},
+		rules: [
+			{
+				type: 'responseCode',
+				properties: {
+					value: 401,
+					message: 'The BattleMetrics access token is invalid or expired.',
+				},
+			},
+			{
+				type: 'responseCode',
+				properties: {
+					value: 403,
+					message:
+						'BattleMetrics denied API access. An eligible subscription and sufficient permissions are required.',
+				},
+			},
+		],
+	};
 }

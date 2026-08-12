@@ -306,6 +306,25 @@ try {
 		'Packed credential enables n8n proxy authentication and arbitrary API-call injection',
 	);
 	assert(
+		credential.test?.request?.method === 'GET' &&
+			credential.test.request.baseURL === 'https://api.battlemetrics.com' &&
+			credential.test.request.url === '/servers' &&
+			credential.test.request.headers?.Authorization === '=Bearer {{$credentials.accessToken}}',
+		'Packed API credential test request is missing or incorrect',
+	);
+	assert(
+		credential.test.rules?.some(
+			(rule) =>
+				rule.type === 'responseCode' &&
+				rule.properties?.value === 401 &&
+				!rule.properties.message.includes('{{$credentials.accessToken}}'),
+		) &&
+			credential.test.rules?.some(
+				(rule) => rule.type === 'responseCode' && rule.properties?.value === 403,
+			),
+		'Packed API credential test does not safely reject invalid or unauthorized access',
+	);
+	assert(
 		credential.properties?.some(
 			(property) =>
 				property.name === 'accessToken' &&
@@ -316,7 +335,7 @@ try {
 	);
 	assert(
 		node.description.credentials?.[0]?.testedBy === undefined,
-		'Packed node exposes a credential test',
+		'Packed action node defines an unexpected testedBy credential test',
 	);
 	const resources = node.description.properties.find((property) => property.name === 'resource');
 	const gameOperation = node.description.properties.find(

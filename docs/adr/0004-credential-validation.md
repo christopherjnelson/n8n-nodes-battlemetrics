@@ -1,14 +1,17 @@
 # ADR 0004: Validate credentials at operation time
 
-- Status: Accepted
+- Status: Amended
 - Date: 2026-08-02
 
 ## Decision
 
-Do not register an n8n network credential test for the `battleMetricsApi` credential. Keep the access
-token field required and secret. Explain in the credential UI that a personal access token may not be
-sufficient for REST API access, that an eligible BattleMetrics subscription may also be required, and
-that the credential is validated when an operation runs.
+Register a declarative n8n credential test for `battleMetricsApi` using the live-verified, read-only
+`GET https://api.battlemetrics.com/servers` endpoint. Put the Bearer expression directly in the test
+request so the credential does not opt into generic proxy authentication. Keep the access token field
+required and secret.
+
+Treat `200` as success, `401` as an invalid or expired token, and `403` as a subscription or permission
+failure. The test proves access to this endpoint only; it does not certify every operation or scope.
 
 Operation errors distinguish the directly observed authentication and subscription cases where the
 response supports that distinction. They must not treat a subscription denial as an invalid token or an
@@ -32,7 +35,19 @@ subscribed token can authenticate successful Server reads. They do not prove tha
 credential-test button therefore still cannot reliably certify every operation, scope, or resource
 permission.
 
-## Rejected alternative
+## 2026-08-11 amendment
+
+Creator Portal's current scanner requires every non-OAuth credential to define a `test` or be tested by
+a node through `testedBy`. The now-live-verified subscribed-token `200` result makes `/servers` a
+legitimate credential test endpoint. n8n's declarative credential test API accepts request headers and
+fails non-2xx responses by default, so no `authenticate` property is needed. Explicit `401` and `403`
+rules provide useful messages without including credential material.
+
+The separate webhook shared-secret credential remains unchanged. It authenticates inbound payloads and
+has no independent outbound verification endpoint, so adding a fabricated request test or a test that
+only checks whether the field is populated would not verify the secret.
+
+## Previously rejected alternative
 
 The foundation registered a credential-test function that made no request and always returned an error
 explaining the limitation. It did not fabricate success, but presenting an always-failing test button
